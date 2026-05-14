@@ -130,7 +130,7 @@ function renderFC(container) {
         <div style="font-size:3rem; font-weight:800; color:var(--primary);">
           <ruby>${card.ja}<rt>${card.reading}</rt></ruby>
         </div>
-        <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}')">🔊</button>
+        <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}', this)">🔊</button>
         <div id="fc-translation" style="display:none; font-size:1.3rem; color:var(--text); margin-top:8px;">${translation}</div>
         <div style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">タップで答えを見る</div>
       </div>
