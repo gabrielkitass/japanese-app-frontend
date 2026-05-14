@@ -1,9 +1,21 @@
 let chatHistory = [];
 let xp = parseInt(localStorage.getItem('xp') || '0');
 let streak = parseInt(localStorage.getItem('streak') || '0');
-const STUDENT_ID = API.getStudentId() || 'demo-student-001';
+let currentUser = null;
+let STUDENT_ID = API.getStudentId() || 'demo-student-001';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 認証チェック（auth.js が読み込まれている場合）
+  if (typeof Auth !== 'undefined') {
+    currentUser = Auth.requireAuth('student');
+    if (!currentUser) return;
+    STUDENT_ID = currentUser.id;
+    API.setStudentId(currentUser.id);
+    if (currentUser.native_language) {
+      localStorage.setItem('preferred_lang', currentUser.native_language);
+    }
+  }
+
   const savedLang = localStorage.getItem('preferred_lang');
   if (savedLang) {
     startApp(savedLang);
@@ -63,8 +75,105 @@ function switchTab(tab, btnEl) {
   }
   const content = document.getElementById('tab-content');
   if (tab === 'homework') renderHomeworkTab(content);
+  else if (tab === 'flashcard') renderFlashcardTab(content);
   else if (tab === 'chat') renderChatTab(content);
   else if (tab === 'progress') renderProgressTab(content);
+}
+
+// フラッシュカードデータ（ブラジル人向け日常語彙）
+const FLASHCARDS = [
+  { ja: '野菜', reading: 'やさい', pt: 'Verdura / Legume', en: 'Vegetable' },
+  { ja: '値段', reading: 'ねだん', pt: 'Preço', en: 'Price' },
+  { ja: '電車', reading: 'でんしゃ', pt: 'Trem / Metrô', en: 'Train' },
+  { ja: '駅', reading: 'えき', pt: 'Estação', en: 'Station' },
+  { ja: '病院', reading: 'びょういん', pt: 'Hospital', en: 'Hospital' },
+  { ja: '薬', reading: 'くすり', pt: 'Remédio', en: 'Medicine' },
+  { ja: '仕事', reading: 'しごと', pt: 'Trabalho', en: 'Work' },
+  { ja: '休み', reading: 'やすみ', pt: 'Descanso / Folga', en: 'Day off' },
+  { ja: '学校', reading: 'がっこう', pt: 'Escola', en: 'School' },
+  { ja: '友達', reading: 'ともだち', pt: 'Amigo(a)', en: 'Friend' },
+  { ja: '家族', reading: 'かぞく', pt: 'Família', en: 'Family' },
+  { ja: '食べ物', reading: 'たべもの', pt: 'Comida', en: 'Food' },
+];
+
+let fcIndex = 0;
+let fcFlipped = false;
+let fcCorrect = 0;
+let fcTotal = 0;
+
+function renderFlashcardTab(container) {
+  fcIndex = 0; fcFlipped = false; fcCorrect = 0; fcTotal = 0;
+  const shuffled = [...FLASHCARDS].sort(() => Math.random() - 0.5);
+  window._fcCards = shuffled;
+  renderFC(container);
+}
+
+function renderFC(container) {
+  const card = window._fcCards[fcIndex];
+  const lang = I18n.getCurrentLang();
+  const translation = lang === 'pt' ? card.pt : lang === 'en' ? card.en : card.reading;
+
+  container.innerHTML = `
+    <div style="text-align:center; padding:16px 0;">
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:16px;">
+        ${fcIndex + 1} / ${window._fcCards.length}
+        &nbsp;|&nbsp; ✅ ${fcCorrect} 正解
+      </div>
+      <div class="progress-bar" style="margin-bottom:24px;">
+        <div class="progress-fill" style="width:${((fcIndex) / window._fcCards.length) * 100}%"></div>
+      </div>
+      <div id="fc-card" onclick="flipCard(this)"
+        style="background:var(--card); border:2px solid var(--border); border-radius:20px;
+               padding:40px 24px; cursor:pointer; min-height:200px; display:flex;
+               flex-direction:column; align-items:center; justify-content:center; gap:12px;
+               box-shadow:var(--shadow); transition:all 0.3s; margin-bottom:24px;">
+        <div style="font-size:3rem; font-weight:800; color:var(--primary);">
+          <ruby>${card.ja}<rt>${card.reading}</rt></ruby>
+        </div>
+        <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}')">🔊</button>
+        <div id="fc-translation" style="display:none; font-size:1.3rem; color:var(--text); margin-top:8px;">${translation}</div>
+        <div style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">タップで答えを見る</div>
+      </div>
+      <div id="fc-actions" style="display:none; display:flex; gap:12px; justify-content:center;">
+        <button class="btn" style="background:#fdecea; color:var(--danger); flex:1;" onclick="fcAnswer(false)">
+          ❌ わからない
+        </button>
+        <button class="btn" style="background:#e8f5e9; color:var(--success); flex:1;" onclick="fcAnswer(true)">
+          ✅ わかった！
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function flipCard(el) {
+  if (fcFlipped) return;
+  fcFlipped = true;
+  document.getElementById('fc-translation').style.display = 'block';
+  el.querySelector('div:last-child').style.display = 'none';
+  document.getElementById('fc-actions').style.display = 'flex';
+  el.style.borderColor = 'var(--primary)';
+}
+
+function fcAnswer(correct) {
+  fcTotal++;
+  if (correct) { fcCorrect++; addXP(5); }
+  fcFlipped = false;
+  fcIndex++;
+  const container = document.getElementById('tab-content');
+  if (fcIndex >= window._fcCards.length) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 20px;">
+        <div style="font-size:3rem; margin-bottom:16px;">${fcCorrect >= window._fcCards.length * 0.8 ? '🎉' : '💪'}</div>
+        <h2 style="margin-bottom:8px;">${fcCorrect} / ${window._fcCards.length} 正解</h2>
+        <p style="color:var(--text-muted); margin-bottom:24px;">+${fcCorrect * 5} XP 獲得！</p>
+        <button class="btn btn-primary" onclick="renderFlashcardTab(document.getElementById('tab-content'))">
+          もう一度
+        </button>
+      </div>`;
+  } else {
+    renderFC(container);
+  }
 }
 
 function renderHomeworkTab(container) {

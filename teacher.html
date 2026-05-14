@@ -22,6 +22,9 @@
     <a href="#students" onclick="showPage('students', this)">
       👥 <span data-i18n="students">生徒一覧</span>
     </a>
+    <a href="#add-student" onclick="showPage('add-student', this)">
+      ➕ 生徒追加
+    </a>
     <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
       <div class="lang-switcher" style="justify-content: center;">
         <button class="lang-btn active" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('ja', this)">日</button>
@@ -126,13 +129,62 @@
       </table>
     </div>
 
+    <!-- 生徒追加 -->
+    <div id="page-add-student" style="display:none;">
+      <div class="page-header">
+        <h1 class="page-title">生徒を追加</h1>
+      </div>
+      <div class="homework-form" style="max-width:480px;">
+        <div class="form-group">
+          <label>名前</label>
+          <input type="text" id="new-student-name" placeholder="Maria Silva">
+        </div>
+        <div class="form-group">
+          <label>メールアドレス</label>
+          <input type="email" id="new-student-email" placeholder="maria@example.com">
+        </div>
+        <div class="form-group">
+          <label>パスワード</label>
+          <input type="password" id="new-student-password" placeholder="••••••">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>母語</label>
+            <select id="new-student-lang">
+              <option value="pt">🇧🇷 Português</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="ja">🇯🇵 日本語</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>レベル</label>
+            <select id="new-student-level">
+              <option value="beginner">初級</option>
+              <option value="elementary">初中級</option>
+              <option value="intermediate">中級</option>
+            </select>
+          </div>
+        </div>
+        <div id="add-student-error" class="error-msg" style="display:none; margin-bottom:12px;"></div>
+        <button class="btn btn-primary" onclick="addStudent()" id="add-student-btn">
+          ➕ 生徒を追加
+        </button>
+      </div>
+    </div>
+
     <div id="error-area"></div>
   </main>
 </div>
 
+<link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/teacher.js"></script>
+<script>
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
 </body>
 </html>

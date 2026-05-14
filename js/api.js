@@ -1,6 +1,6 @@
 const API = (() => {
-  function getToken() { return sessionStorage.getItem('auth_token'); }
-  function setToken(t) { sessionStorage.setItem('auth_token', t); }
+  function getToken() { return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token'); }
+  function setToken(t) { localStorage.setItem('auth_token', t); sessionStorage.setItem('auth_token', t); }
   function getStudentId() { return localStorage.getItem('student_id'); }
   function setStudentId(id) { localStorage.setItem('student_id', id); }
 
@@ -38,5 +38,5 @@ const API = (() => {
       body: JSON.stringify({ studentId, lessonId, score, details })
     });
 
-  return { setToken, getToken, setStudentId, getStudentId, sendChatMessage, generateHomework, getProgress, saveProgress };
+  return { request, setToken, getToken, setStudentId, getStudentId, sendChatMessage, generateHomework, getProgress, saveProgress };
 })();

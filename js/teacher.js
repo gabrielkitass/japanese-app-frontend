@@ -1,7 +1,12 @@
 let currentHomework = null;
+let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   I18n.init();
+  if (typeof Auth !== 'undefined') {
+    currentUser = Auth.requireAuth('teacher');
+    if (!currentUser) return;
+  }
   loadDashboard();
 });
 
@@ -72,28 +77,95 @@ async function loadStudents() {
   const tbody = document.getElementById('students-tbody');
   tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">${I18n.t('loading')}</td></tr>`;
 
-  const DEMO_STUDENTS = [
-    { name: 'Maria Silva', native_language: 'pt', level: 'beginner', streak: 12, progress: 45 },
-    { name: 'John Smith', native_language: 'en', level: 'elementary', streak: 5, progress: 62 },
-    { name: 'Ana Oliveira', native_language: 'pt', level: 'beginner', streak: 21, progress: 38 },
-  ];
+  try {
+    const data = await API.request('/api/auth/students');
+    const students = data.students || [];
+    if (students.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">まだ生徒がいません。「生徒追加」から追加してください。</td></tr>`;
+      document.getElementById('stat-students').textContent = '0';
+      return;
+    }
+    tbody.innerHTML = students.map(s => `
+      <tr>
+        <td>${s.name}</td>
+        <td>${s.native_language === 'pt' ? '🇧🇷 PT' : s.native_language === 'en' ? '🇺🇸 EN' : '🇯🇵 JA'}</td>
+        <td><span class="level-badge level-${s.level}">${s.level}</span></td>
+        <td>${s.lessons_completed || 0} レッスン</td>
+        <td>
+          <div class="progress-bar" style="width:120px;">
+            <div class="progress-fill" style="width:${Math.min(100, (s.lessons_completed || 0) * 10)}%"></div>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    document.getElementById('stat-students').textContent = students.length;
+    renderProgressChart(students);
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--danger); padding:16px;">${err.message}</td></tr>`;
+  }
+}
 
-  tbody.innerHTML = DEMO_STUDENTS.map(s => `
-    <tr>
-      <td>${s.name}</td>
-      <td>${s.native_language === 'pt' ? '🇧🇷 PT' : '🇺🇸 EN'}</td>
-      <td><span class="level-badge level-${s.level}">${s.level}</span></td>
-      <td>🔥 ${s.streak}日</td>
-      <td>
-        <div class="progress-bar" style="width:120px;">
-          <div class="progress-fill" style="width:${s.progress}%"></div>
-        </div>
-        <small style="color:var(--text-muted)">${s.progress}%</small>
-      </td>
-    </tr>
-  `).join('');
+function renderProgressChart(students) {
+  const existing = document.getElementById('progress-chart-area');
+  if (existing) existing.remove();
+  if (!students.length || typeof Chart === 'undefined') return;
 
-  document.getElementById('stat-students').textContent = DEMO_STUDENTS.length;
+  const area = document.createElement('div');
+  area.id = 'progress-chart-area';
+  area.className = 'card';
+  area.style.marginTop = '24px';
+  area.innerHTML = `<h3 style="font-size:0.95rem; margin-bottom:16px; color:var(--text-muted);">📊 生徒別進捗</h3>
+    <canvas id="progress-chart" height="80"></canvas>`;
+  document.getElementById('page-students').appendChild(area);
+
+  new Chart(document.getElementById('progress-chart'), {
+    type: 'bar',
+    data: {
+      labels: students.map(s => s.name.split(' ')[0]),
+      datasets: [{
+        label: '完了レッスン数',
+        data: students.map(s => s.lessons_completed || 0),
+        backgroundColor: '#4A90D9',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+async function addStudent() {
+  const name = document.getElementById('new-student-name').value.trim();
+  const email = document.getElementById('new-student-email').value.trim();
+  const password = document.getElementById('new-student-password').value;
+  const native_language = document.getElementById('new-student-lang').value;
+  const level = document.getElementById('new-student-level').value;
+  const errEl = document.getElementById('add-student-error');
+  const btn = document.getElementById('add-student-btn');
+
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = `<span class="loading-spinner"></span>`;
+
+  try {
+    await API.request('/api/auth/add-student', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password, native_language, level })
+    });
+    ['new-student-name','new-student-email','new-student-password'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    btn.innerHTML = '✅ 追加しました！';
+    setTimeout(() => { btn.innerHTML = '➕ 生徒を追加'; btn.disabled = false; }, 2000);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '➕ 生徒を追加';
+  }
 }
 
 function showError(msg) {
