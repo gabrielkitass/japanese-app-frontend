@@ -25,6 +25,12 @@
     <a href="#add-student" onclick="showPage('add-student', this)">
       ➕ 生徒追加
     </a>
+    <a href="#report" onclick="showPage('report', this)">
+      📊 週次レポート
+    </a>
+    <a href="#billing" onclick="showPage('billing', this)">
+      💳 課金管理
+    </a>
     <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
       <div class="lang-switcher" style="justify-content: center;">
         <button class="lang-btn active" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('ja', this)">日</button>
@@ -169,6 +175,29 @@
         <button class="btn btn-primary" onclick="addStudent()" id="add-student-btn">
           ➕ 生徒を追加
         </button>
+      </div>
+    </div>
+
+    <!-- 週次レポート -->
+    <div id="page-report" style="display:none;">
+      <div class="page-header">
+        <h1 class="page-title">📊 AI週次レポート</h1>
+        <button class="btn btn-primary" onclick="generateReport()" id="report-btn">✨ レポート生成</button>
+      </div>
+      <div class="card" id="report-content" style="min-height:200px; line-height:1.9; white-space:pre-wrap;">
+        <span style="color:var(--text-muted);">「レポート生成」を押すとAIが生徒の進捗を分析して先生向けの週次レポートを作成します。</span>
+      </div>
+    </div>
+
+    <!-- 課金管理 -->
+    <div id="page-billing" style="display:none;">
+      <div class="page-header">
+        <h1 class="page-title">💳 課金管理</h1>
+      </div>
+      <div class="card" style="max-width:500px;">
+        <div id="billing-status-area">
+          <div style="color:var(--text-muted);">読み込み中...</div>
+        </div>
       </div>
     </div>
 

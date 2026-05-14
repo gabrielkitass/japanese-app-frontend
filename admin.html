@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理ダッシュボード</title>
+  <link rel="stylesheet" href="css/common.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body { padding: 32px; max-width: 1100px; margin: 0 auto; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .admin-title { font-size: 1.5rem; font-weight: 800; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .kpi-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+    .kpi-value { font-size: 2rem; font-weight: 800; }
+    .kpi-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+    .kpi-positive { color: var(--success); }
+    .kpi-warning { color: var(--accent); }
+    .kpi-primary { color: var(--primary); }
+    .section { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+    .section h2 { font-size: 1rem; margin-bottom: 16px; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .status-active { color: var(--success); font-weight: 600; }
+    .status-trial { color: var(--accent); font-weight: 600; }
+    .status-past_due { color: var(--danger); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">🎌 管理ダッシュボード</div>
+      <div style="color:var(--text-muted); font-size:0.85rem;">gabkitass716@gmail.com</div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <span id="last-updated" style="font-size:0.8rem; color:var(--text-muted);"></span>
+      <button class="btn btn-ghost" onclick="loadAll()">🔄 更新</button>
+      <button class="btn" style="background:#fdecea; color:var(--danger);" onclick="Auth.logout()">ログアウト</button>
+    </div>
+  </div>
+
+  <div id="error-msg" class="error-msg" style="display:none; margin-bottom:24px;"></div>
+
+  <!-- KPI -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card"><div class="kpi-value kpi-primary" id="kpi-teachers">—</div><div class="kpi-label">教室数（先生）</div></div>
+    <div class="kpi-card"><div class="kpi-value kpi-primary" id="kpi-students">—</div><div class="kpi-label">生徒数</div></div>
+    <div class="kpi-card"><div class="kpi-value kpi-positive" id="kpi-revenue">—</div><div class="kpi-label">月間収入</div></div>
+    <div class="kpi-card"><div class="kpi-value kpi-warning" id="kpi-cost">—</div><div class="kpi-label">月間APIコスト</div></div>
+    <div class="kpi-card"><div class="kpi-value kpi-positive" id="kpi-profit">—</div><div class="kpi-label">月間利益</div></div>
+    <div class="kpi-card"><div class="kpi-value" id="kpi-tokens">—</div><div class="kpi-label">今日のトークン</div></div>
+  </div>
+
+  <!-- 収支グラフ -->
+  <div class="section">
+    <h2>📊 収支バランス（今月）</h2>
+    <canvas id="profit-chart" height="60"></canvas>
+  </div>
+
+  <!-- 教室別使用量 -->
+  <div class="section">
+    <h2>🏫 教室別使用量</h2>
+    <table id="usage-table">
+      <thead><tr><th>先生名</th><th>メール</th><th>生徒数</th><th>月間トークン</th><th>ステータス</th></tr></thead>
+      <tbody id="usage-tbody"><tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">読み込み中...</td></tr></tbody>
+    </table>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let currentUser = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      currentUser = Auth.requireAuth('teacher');
+      if (!currentUser) return;
+      if (currentUser.email !== 'gabkitass716@gmail.com') {
+        document.body.innerHTML = '<div style="padding:40px; text-align:center; color:red;">管理者専用ページです</div>';
+        return;
+      }
+      loadAll();
+    });
+
+    async function loadAll() {
+      document.getElementById('last-updated').textContent = '更新中...';
+      await Promise.all([loadStats(), loadUsage()]);
+      document.getElementById('last-updated').textContent = `最終更新: ${new Date().toLocaleTimeString('ja-JP')}`;
+    }
+
+    async function loadStats() {
+      try {
+        const data = await API.request('/api/admin/stats');
+        document.getElementById('kpi-teachers').textContent = data.teachers;
+        document.getElementById('kpi-students').textContent = data.students;
+        document.getElementById('kpi-revenue').textContent = `¥${data.revenue_jpy.toLocaleString()}`;
+        document.getElementById('kpi-cost').textContent = `¥${data.estimated_cost_jpy.toLocaleString()}`;
+        document.getElementById('kpi-profit').textContent = `¥${data.profit_jpy.toLocaleString()}`;
+        document.getElementById('kpi-tokens').textContent = data.tokens_today.toLocaleString();
+        renderProfitChart(data);
+      } catch (err) {
+        document.getElementById('error-msg').textContent = err.message;
+        document.getElementById('error-msg').style.display = 'block';
+      }
+    }
+
+    async function loadUsage() {
+      try {
+        const data = await API.request('/api/admin/usage');
+        const tbody = document.getElementById('usage-tbody');
+        if (!data.teachers.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">データなし</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.teachers.map(t => `
+          <tr>
+            <td>${t.name}</td>
+            <td style="color:var(--text-muted)">${t.email}</td>
+            <td>${t.student_count}</td>
+            <td>${parseInt(t.tokens_month).toLocaleString()} tokens</td>
+            <td><span class="status-${t.subscription_status || 'trial'}">${t.subscription_status || 'trial'}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        document.getElementById('usage-tbody').innerHTML = `<tr><td colspan="5" style="color:var(--danger)">${err.message}</td></tr>`;
+      }
+    }
+
+    function renderProfitChart(data) {
+      const ctx = document.getElementById('profit-chart');
+      if (window._profitChart) window._profitChart.destroy();
+      window._profitChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['収入', 'APIコスト', 'インフラ', '利益'],
+          datasets: [{
+            data: [data.revenue_jpy, data.estimated_cost_jpy, 1125, data.profit_jpy],
+            backgroundColor: ['#27AE60', '#FF6B35', '#E74C3C', '#4A90D9'],
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { callback: v => `¥${v.toLocaleString()}` } } }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

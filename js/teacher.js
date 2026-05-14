@@ -17,6 +17,7 @@ function showPage(name, linkEl) {
   if (linkEl) linkEl.classList.add('active');
 
   if (name === 'students') loadStudents();
+  if (name === 'billing') loadBilling();
 }
 
 function switchLang(lang, btnEl) {
@@ -165,6 +166,70 @@ async function addStudent() {
     errEl.style.display = 'block';
     btn.disabled = false;
     btn.innerHTML = '➕ 生徒を追加';
+  }
+}
+
+async function generateReport() {
+  const btn = document.getElementById('report-btn');
+  const content = document.getElementById('report-content');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="loading-spinner"></span> 分析中...`;
+  content.textContent = 'AIが生徒データを分析しています...';
+  try {
+    const data = await API.request('/api/reports/weakness');
+    content.textContent = data.report;
+  } catch (err) {
+    content.innerHTML = `<span style="color:var(--danger)">${err.message}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ レポート生成';
+  }
+}
+
+async function loadBilling() {
+  const area = document.getElementById('billing-status-area');
+  try {
+    const data = await API.request('/api/billing/status');
+    const isTrialActive = data.status === 'trial' && new Date(data.trial_ends_at) > new Date();
+    const trialDaysLeft = isTrialActive
+      ? Math.ceil((new Date(data.trial_ends_at) - new Date()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    area.innerHTML = `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">ステータス</div>
+        <div style="font-size:1.2rem; font-weight:700; color:${isTrialActive ? 'var(--accent)' : 'var(--success)'}">
+          ${isTrialActive ? `🎁 無料トライアル（残り${trialDaysLeft}日）` : '✅ 有効'}
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">生徒数</div>
+        <div style="font-size:1.5rem; font-weight:700;">${data.student_count}人</div>
+      </div>
+      <div style="margin-bottom:24px;">
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">トライアル終了後の月額</div>
+        <div style="font-size:1.5rem; font-weight:700; color:var(--primary)">¥${data.monthly_cost.toLocaleString()}</div>
+        <div style="font-size:0.8rem; color:var(--text-muted)">（¥1,000 × ${data.student_count}人）</div>
+      </div>
+      ${isTrialActive
+        ? `<button class="btn btn-primary" onclick="startBilling()" style="width:100%">💳 今すぐ支払い方法を登録</button>
+           <div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center">
+             トライアル中は課金されません
+           </div>`
+        : `<div class="btn btn-success" style="width:100%; text-align:center;">✅ 支払い設定済み</div>`
+      }
+    `;
+  } catch (err) {
+    area.innerHTML = `<span style="color:var(--danger)">${err.message}</span>`;
+  }
+}
+
+async function startBilling() {
+  try {
+    const data = await API.request('/api/billing/create-checkout', { method: 'POST', body: JSON.stringify({}) });
+    window.location.href = data.url;
+  } catch (err) {
+    showError(err.message);
   }
 }
 
