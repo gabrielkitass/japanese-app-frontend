@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  API_BASE_URL: 'https://japanese-app-backend.up.railway.app',
+  API_BASE_URL: 'https://japanese-app-backend.onrender.com',
   ENDPOINTS: {
     CHAT:              '/api/chat',
     GENERATE_HOMEWORK: '/api/generate-homework',
