@@ -37,5 +37,14 @@
   "vocabulary": "単語",
   "grammar": "文法",
   "listening": "聞き取り",
-  "speaking": "話す練習"
+  "speaking": "話す練習",
+  "tab_flashcard": "単語カード",
+  "fc_mode_all": "全部",
+  "fc_mode_review": "復習",
+  "fc_mode_new": "新しい",
+  "fc_wrong": "わからない",
+  "fc_correct": "わかった！",
+  "fc_loading": "カードを読み込み中...",
+  "fc_session_done": "セッション完了！",
+  "fc_score": "正解率"
 }

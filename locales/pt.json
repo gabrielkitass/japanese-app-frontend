@@ -37,5 +37,14 @@
   "vocabulary": "Vocabulário",
   "grammar": "Gramática",
   "listening": "Compreensão Oral",
-  "speaking": "Prática de Fala"
+  "speaking": "Prática de Fala",
+  "tab_flashcard": "Cartões",
+  "fc_mode_all": "Todos",
+  "fc_mode_review": "Revisar",
+  "fc_mode_new": "Novos",
+  "fc_wrong": "Não sei",
+  "fc_correct": "Entendi!",
+  "fc_loading": "Carregando cartões...",
+  "fc_session_done": "Sessão completa!",
+  "fc_score": "Pontuação"
 }

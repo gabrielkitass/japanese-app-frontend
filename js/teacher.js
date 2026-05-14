@@ -76,13 +76,13 @@ async function sendToAll() {
 
 async function loadStudents() {
   const tbody = document.getElementById('students-tbody');
-  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">${I18n.t('loading')}</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">${I18n.t('loading')}</td></tr>`;
 
   try {
     const data = await API.request('/api/auth/students');
     const students = data.students || [];
     if (students.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">まだ生徒がいません。「生徒追加」から追加してください。</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">まだ生徒がいません。「生徒追加」から追加してください。</td></tr>`;
       document.getElementById('stat-students').textContent = '0';
       return;
     }
@@ -97,12 +97,17 @@ async function loadStudents() {
             <div class="progress-fill" style="width:${Math.min(100, (s.lessons_completed || 0) * 10)}%"></div>
           </div>
         </td>
+        <td>
+          <button class="btn btn-ghost" onclick="showFlashcardStats('${s.id}', '${s.name}')">
+            📊 カード進捗
+          </button>
+        </td>
       </tr>
     `).join('');
     document.getElementById('stat-students').textContent = students.length;
     renderProgressChart(students);
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--danger); padding:16px;">${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); padding:16px;">${err.message}</td></tr>`;
   }
 }
 
@@ -240,4 +245,138 @@ function showError(msg) {
 
 function clearError() {
   document.getElementById('error-area').innerHTML = '';
+}
+
+async function showFlashcardStats(studentId, studentName) {
+  const modal = document.createElement('div');
+  modal.id = 'fc-stats-modal';
+  modal.innerHTML = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;">
+      <div style="background:var(--card);border-radius:16px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="font-size:1.1rem;margin:0;">📊 ${studentName} のカード進捗</h2>
+          <button onclick="document.getElementById('fc-stats-modal').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        </div>
+        <div id="fc-stats-content">
+          <div style="text-align:center;padding:20px;color:var(--text-muted);">読み込み中...</div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  try {
+    const data = await API.request(`/api/teacher/flashcard-stats/${studentId}`);
+    const s = data.summary;
+    const lastActivity = s.last_activity
+      ? new Date(s.last_activity).toLocaleDateString('ja-JP')
+      : 'なし';
+
+    const categoryRows = data.categories.map(cat => {
+      const masteredPct = cat.total > 0 ? Math.round(cat.mastered / cat.total * 100) : 0;
+      const barColor = masteredPct >= 80 ? 'var(--success)' : masteredPct >= 40 ? 'var(--accent)' : 'var(--danger)';
+      return `
+        <tr>
+          <td style="padding:8px 4px;font-weight:600;">${cat.category}</td>
+          <td style="padding:8px 4px;text-align:center;color:var(--text-muted);">${cat.learned}/${cat.total}</td>
+          <td style="padding:8px 4px;text-align:center;">
+            <div style="background:var(--border);border-radius:4px;height:8px;width:80px;display:inline-block;vertical-align:middle;">
+              <div style="background:${barColor};height:100%;width:${masteredPct}%;border-radius:4px;"></div>
+            </div>
+            <span style="margin-left:6px;font-size:0.8rem;color:var(--text-muted);">${masteredPct}%</span>
+          </td>
+          <td style="padding:8px 4px;text-align:center;color:var(--danger);">${cat.due > 0 ? `${cat.due}件` : '—'}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('fc-stats-content').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--primary);">${s.total_learned || 0}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">学習済み</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--success);">${s.total_mastered || 0}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">定着済み</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--accent);">${s.total_due || 0}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">要復習</div>
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">最終学習: ${lastActivity}</p>
+
+      ${data.categories.length > 0 ? `
+        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:20px;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:8px 4px;text-align:left;color:var(--text-muted);">カテゴリ</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--text-muted);">学習</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--text-muted);">定着率</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--text-muted);">要復習</th>
+          </tr></thead>
+          <tbody>${categoryRows}</tbody>
+        </table>
+      ` : '<p style="text-align:center;color:var(--text-muted);padding:16px;">フラッシュカードをまだ使用していません</p>'}
+
+      <button class="btn btn-primary" style="width:100%;"
+        onclick="suggestHomeworkFromFlashcards('${studentId}', '${studentName}', this)">
+        🤖 弱点から宿題を自動提案
+      </button>
+      <div id="hw-suggestion-result" style="margin-top:16px;"></div>
+    `;
+  } catch (err) {
+    document.getElementById('fc-stats-content').innerHTML =
+      `<div style="color:var(--danger);padding:16px;">${err.message}</div>`;
+  }
+}
+
+async function suggestHomeworkFromFlashcards(studentId, studentName, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> AI分析中...';
+  const resultEl = document.getElementById('hw-suggestion-result');
+
+  try {
+    const data = await API.request('/api/teacher/suggest-homework', {
+      method: 'POST',
+      body: JSON.stringify({ studentId })
+    });
+    const s = data.suggestion;
+    const exerciseHTML = (s.exercises || []).map((ex, i) => `
+      <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:8px;">
+        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">${ex.type}</div>
+        <div style="font-weight:600;margin-bottom:4px;">${ex.instruction}</div>
+        <div style="font-size:0.9rem;color:var(--text);">${ex.content}</div>
+      </div>`).join('');
+
+    resultEl.innerHTML = `
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-weight:700;margin-bottom:12px;">📝 ${s.theme}</div>
+        ${exerciseHTML}
+        ${s.teacher_note ? `<div style="background:#fff8e1;border-radius:8px;padding:10px;margin-top:8px;font-size:0.85rem;color:#8a6914;">💡 ${s.teacher_note}</div>` : ''}
+        <button class="btn btn-primary" style="width:100%;margin-top:12px;"
+          onclick="applyHomeworkSuggestion(${JSON.stringify(s).replace(/"/g, '&quot;')})">
+          この宿題を配布する
+        </button>
+      </div>`;
+    btn.disabled = false;
+    btn.textContent = '🤖 弱点から宿題を自動提案';
+  } catch (err) {
+    resultEl.innerHTML = `<div style="color:var(--danger);">${err.message}</div>`;
+    btn.disabled = false;
+    btn.textContent = '🤖 弱点から宿題を自動提案';
+  }
+}
+
+function applyHomeworkSuggestion(suggestion) {
+  // 宿題生成フォームにテーマをセットして閉じる
+  const themeInput = document.getElementById('hw-theme');
+  if (themeInput) {
+    themeInput.value = suggestion.theme;
+    document.getElementById('fc-stats-modal')?.remove();
+    // 宿題タブに切り替え（存在する場合）
+    const hwTab = document.querySelector('[data-tab="homework"]');
+    if (hwTab) hwTab.click();
+  } else {
+    alert(`宿題テーマ「${suggestion.theme}」を宿題生成フォームに入力してください`);
+  }
 }

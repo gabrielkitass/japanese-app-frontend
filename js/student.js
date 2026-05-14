@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     startApp(savedLang);
   }
   updateStats();
+
+  // オンボーディング（初回のみ表示）
+  Onboarding.show();
 });
 
 async function selectLang(lang) {
@@ -130,7 +133,10 @@ function renderFC(container) {
         <div style="font-size:3rem; font-weight:800; color:var(--primary);">
           <ruby id="fc-ruby">${card.ja}<rt id="fc-rt" style="visibility:hidden">${card.reading}</rt></ruby>
         </div>
-        <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}', this)">🔊</button>
+        <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+          <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}', this)">🔊</button>
+          <button class="btn-pron" onclick="event.stopPropagation(); Pronunciation.init('${card.ja.replace(/'/g, "\\'")}', '${card.reading.replace(/'/g, "\\'")}');" title="発音練習" style="font-size:1.5rem; background:none; border:none; cursor:pointer;">🎤</button>
+        </div>
         <div id="fc-translation" style="display:none; font-size:1.3rem; color:var(--text); margin-top:8px;">${translation}</div>
         <div style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">タップで答えを見る</div>
       </div>

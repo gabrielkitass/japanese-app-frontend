@@ -6,6 +6,10 @@
   <title>にほんごアプリ</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/student.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="日本語">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
 </head>
 <body>
 
@@ -44,6 +48,60 @@
       <!-- タブコンテンツが動的に挿入される -->
     </div>
 
+    <section id="tab-flashcard" class="tab-panel" hidden>
+      <!-- セットアップ画面 -->
+      <div id="fc-setup">
+        <div class="fc-controls">
+          <select id="fc-level">
+            <option value="n5">N5</option>
+            <option value="n4">N4</option>
+            <option value="n3">N3</option>
+          </select>
+          <select id="fc-category"></select>
+          <select id="fc-mode">
+            <option value="all" data-i18n="fc_mode_all">全部</option>
+            <option value="review" data-i18n="fc_mode_review">復習</option>
+            <option value="new" data-i18n="fc_mode_new">新しい</option>
+          </select>
+          <button id="fc-start" class="btn btn-primary" data-i18n="tab_flashcard">単語カードを始める</button>
+        </div>
+      </div>
+
+      <!-- セッション画面 -->
+      <div id="fc-session" hidden>
+        <div class="fc-progress">
+          <span id="fc-count">0 / 0</span>
+          <div class="progress-bar"><div id="fc-bar" style="width:0%"></div></div>
+        </div>
+        <div class="fc-card-area">
+          <div class="fc-card" id="fc-card">
+            <div class="fc-front">
+              <div class="fc-japanese" id="fc-japanese"></div>
+              <div class="fc-reading" id="fc-reading"></div>
+            </div>
+            <div class="fc-back" hidden>
+              <div class="fc-meaning" id="fc-meaning"></div>
+              <div class="fc-example" id="fc-example"></div>
+            </div>
+          </div>
+          <div class="fc-actions" id="fc-actions" hidden>
+            <button class="btn btn-danger" id="fc-wrong" data-i18n="fc_wrong">わからない</button>
+            <button class="btn btn-success" id="fc-correct" data-i18n="fc_correct">わかった！</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 結果画面 -->
+      <div id="fc-results" hidden>
+        <div class="fc-result-card">
+          <h2 data-i18n="fc_session_done">セッション完了！</h2>
+          <div class="fc-score" id="fc-result-score"></div>
+          <div id="fc-result-detail"></div>
+          <button class="btn btn-primary" onclick="document.getElementById('fc-setup').hidden=false;document.getElementById('fc-results').hidden=true;">もう一度</button>
+        </div>
+      </div>
+    </section>
+
     <nav class="student-nav">
       <button class="active" onclick="switchTab('homework', this)">
         <span class="nav-icon">📝</span>
@@ -71,6 +129,9 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/student.js"></script>
+  <script src="js/flashcard.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/pronunciation.js"></script>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
   </script>

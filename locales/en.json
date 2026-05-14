@@ -37,5 +37,14 @@
   "vocabulary": "Vocabulary",
   "grammar": "Grammar",
   "listening": "Listening",
-  "speaking": "Speaking Practice"
+  "speaking": "Speaking Practice",
+  "tab_flashcard": "Flashcards",
+  "fc_mode_all": "All",
+  "fc_mode_review": "Review",
+  "fc_mode_new": "New",
+  "fc_wrong": "Don't know",
+  "fc_correct": "Got it!",
+  "fc_loading": "Loading cards...",
+  "fc_session_done": "Session complete!",
+  "fc_score": "Score"
 }
