@@ -223,6 +223,12 @@ async function loadBilling() {
            </div>`
         : `<div class="btn btn-success" style="width:100%; text-align:center;">✅ 支払い設定済み</div>`
       }
+      <button class="btn btn-ghost" onclick="openBillingPortal()" style="width:100%; margin-top:8px;">
+        💳 支払い方法・請求書を確認
+      </button>
+      <button class="btn btn-ghost" onclick="cancelSubscription()" style="width:100%; margin-top:8px; color:var(--danger);">
+        サブスクリプションを解約
+      </button>
     `;
   } catch (err) {
     area.innerHTML = `<span style="color:var(--danger)">${err.message}</span>`;
@@ -378,5 +384,30 @@ function applyHomeworkSuggestion(suggestion) {
     if (hwTab) hwTab.click();
   } else {
     alert(`宿題テーマ「${suggestion.theme}」を宿題生成フォームに入力してください`);
+  }
+}
+
+async function openBillingPortal() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '読み込み中...';
+  try {
+    const data = await API.request('/api/billing/portal', { method: 'POST', body: '{}' });
+    window.location.href = data.url;
+  } catch (err) {
+    alert(err.message);
+    btn.disabled = false;
+    btn.textContent = '💳 支払い方法・請求書を確認';
+  }
+}
+
+async function cancelSubscription() {
+  if (!confirm('サブスクリプションを解約しますか？現在の請求期間末まで利用できます。')) return;
+  try {
+    await API.request('/api/billing/cancel', { method: 'POST', body: '{}' });
+    alert('解約処理を受け付けました。請求期間末まで引き続きご利用いただけます。');
+    loadBilling();
+  } catch (err) {
+    alert(err.message);
   }
 }
