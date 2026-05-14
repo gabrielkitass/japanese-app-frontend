@@ -8,14 +8,21 @@ const Auth = (() => {
   }
   function isLoggedIn() { return !!getToken(); }
 
-  async function login(email, password) {
-    const res = await fetch(CONFIG.API_BASE_URL + '/api/auth/login', {
+  async function authFetch(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify(body)
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'ログイン失敗');
+    let data;
+    try { data = await res.json(); }
+    catch { throw new Error('サーバーが起動中です。10秒後に再試行してください。'); }
+    if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
+    return data;
+  }
+
+  async function login(email, password) {
+    const data = await authFetch('/api/auth/login', { email, password });
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     API.setToken(data.token);
@@ -23,13 +30,7 @@ const Auth = (() => {
   }
 
   async function register(name, email, password) {
-    const res = await fetch(CONFIG.API_BASE_URL + '/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || '登録失敗');
+    const data = await authFetch('/api/auth/register', { name, email, password });
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     API.setToken(data.token);
