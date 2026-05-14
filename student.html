@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>にほんごアプリ</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/student.css">
+</head>
+<body>
+
+  <!-- 言語選択画面 -->
+  <div id="lang-screen" class="lang-select-screen">
+    <div class="app-logo">🎌</div>
+    <h1>にほんごアプリ<br><span style="font-size:0.7em; color:var(--text-muted);">Japanese Learning App</span></h1>
+    <div class="lang-options">
+      <button class="lang-option-btn" onclick="selectLang('ja')">
+        <span class="flag">🇯🇵</span> 日本語
+      </button>
+      <button class="lang-option-btn" onclick="selectLang('en')">
+        <span class="flag">🇺🇸</span> English
+      </button>
+      <button class="lang-option-btn" onclick="selectLang('pt')">
+        <span class="flag">🇧🇷</span> Português (Brasil)
+      </button>
+    </div>
+  </div>
+
+  <!-- メインアプリ -->
+  <div id="main-app" class="student-app" style="display:none;">
+
+    <header class="student-header">
+      <div>
+        <div style="font-weight:700; font-size:1rem;" data-i18n="app_name">にほんごアプリ</div>
+        <div class="streak">🔥 <span id="streak-count">0</span> <span data-i18n="days">日</span></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="xp-badge">⭐ <span id="xp-count">0</span> XP</span>
+        <button class="lang-btn active" style="font-size:0.75rem; padding:4px 10px;" id="lang-indicator" onclick="showLangMenu()">🌐</button>
+      </div>
+    </header>
+
+    <div class="student-content" id="tab-content">
+      <!-- タブコンテンツが動的に挿入される -->
+    </div>
+
+    <nav class="student-nav">
+      <button class="active" onclick="switchTab('homework', this)">
+        <span class="nav-icon">📝</span>
+        <span data-i18n="homework">宿題</span>
+      </button>
+      <button onclick="switchTab('chat', this)">
+        <span class="nav-icon">🤖</span>
+        <span data-i18n="ask_ai">AI</span>
+      </button>
+      <button onclick="switchTab('progress', this)">
+        <span class="nav-icon">📈</span>
+        <span data-i18n="progress">進捗</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/student.js"></script>
+</body>
+</html>

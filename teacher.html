@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>先生ダッシュボード</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/teacher.css">
+</head>
+<body>
+<div class="teacher-layout">
+
+  <!-- サイドバー -->
+  <nav class="sidebar">
+    <div class="logo">🎌 にほんごアプリ</div>
+    <a href="#dashboard" class="active" onclick="showPage('dashboard', this)">
+      📊 <span data-i18n="dashboard">ダッシュボード</span>
+    </a>
+    <a href="#homework" onclick="showPage('homework', this)">
+      📝 <span data-i18n="homework">宿題作成</span>
+    </a>
+    <a href="#students" onclick="showPage('students', this)">
+      👥 <span data-i18n="students">生徒一覧</span>
+    </a>
+    <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <div class="lang-switcher" style="justify-content: center;">
+        <button class="lang-btn active" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('ja', this)">日</button>
+        <button class="lang-btn" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('en', this)">EN</button>
+        <button class="lang-btn" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('pt', this)">PT</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- メインコンテンツ -->
+  <main class="main-content">
+
+    <!-- ダッシュボード -->
+    <div id="page-dashboard">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="dashboard">ダッシュボード</h1>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-students">—</div>
+          <div class="stat-label" data-i18n="students">生徒数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-homework">—</div>
+          <div class="stat-label" data-i18n="homework">今週の宿題</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-active">—</div>
+          <div class="stat-label">今日の学習者</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="font-size:1rem; margin-bottom:12px; color:var(--text-muted);">⚡ クイック宿題作成</h2>
+        <div style="display:flex; gap:10px;">
+          <input type="text" id="quick-topic" placeholder="今週のテーマ（例：スーパー・買い物）"
+            style="flex:1; padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-size:0.95rem; outline:none;"
+            onkeypress="if(event.key==='Enter') quickGenerate()">
+          <button class="btn btn-accent" onclick="quickGenerate()" id="quick-btn">
+            ✨ <span data-i18n="generate">AI生成</span>
+          </button>
+        </div>
+        <div id="quick-preview" class="homework-preview"></div>
+        <div id="quick-actions" style="margin-top:12px; display:none;">
+          <button class="btn btn-success" onclick="sendToAll()">
+            📤 <span data-i18n="send_to_all">全員に配布</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 宿題作成 -->
+    <div id="page-homework" style="display:none;">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="create_homework">宿題を作成</h1>
+      </div>
+      <div class="homework-form">
+        <h2>AI 宿題セット生成</h2>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;">
+            <label data-i18n="homework_topic">テーマを入力</label>
+            <input type="text" id="hw-topic" data-i18n-placeholder="homework_topic" placeholder="例：スーパー・買い物">
+          </div>
+          <div class="form-group">
+            <label data-i18n="level">レベル</label>
+            <select id="hw-level">
+              <option value="beginner">初級</option>
+              <option value="elementary">初中級</option>
+              <option value="intermediate">中級</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="generateHomework()" id="gen-btn">
+            ✨ <span data-i18n="generate">生成</span>
+          </button>
+        </div>
+        <div id="hw-preview" class="homework-preview"></div>
+        <div id="hw-actions" style="margin-top:16px; display:none;">
+          <button class="btn btn-success" onclick="sendToAll()">
+            📤 <span data-i18n="send_to_all">全員に配布</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 生徒一覧 -->
+    <div id="page-students" style="display:none;">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="students">生徒一覧</h1>
+      </div>
+      <table class="students-table">
+        <thead>
+          <tr>
+            <th>名前</th>
+            <th>母語</th>
+            <th data-i18n="level">レベル</th>
+            <th data-i18n="streak">連続日数</th>
+            <th data-i18n="progress">進捗</th>
+          </tr>
+        </thead>
+        <tbody id="students-tbody">
+          <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="error-area"></div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/teacher.js"></script>
+</body>
+</html>

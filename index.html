@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>にほんごアプリ</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    .landing {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 32px;
+      text-align: center;
+    }
+    .logo-area { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .logo-icon { font-size: 4rem; }
+    .logo-title { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .logo-subtitle { font-size: 1rem; color: var(--text-muted); }
+    .role-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .role-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 180px;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .role-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+    .role-card .role-icon { font-size: 2.5rem; }
+    .role-card .role-name { font-weight: 700; font-size: 1rem; }
+    .role-card .role-desc { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+    .lang-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: -16px; }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="lang-bar">
+      <button class="lang-btn active" onclick="switchLang('ja')">日本語</button>
+      <button class="lang-btn" onclick="switchLang('en')">English</button>
+      <button class="lang-btn" onclick="switchLang('pt')">Português</button>
+    </div>
+
+    <div class="logo-area">
+      <div class="logo-icon">🎌</div>
+      <div class="logo-title" data-i18n="app_name">にほんごアプリ</div>
+      <div class="logo-subtitle">日本語教室向け AI 学習アプリ</div>
+    </div>
+
+    <div class="role-cards">
+      <a href="teacher.html" class="role-card">
+        <div class="role-icon">👩‍🏫</div>
+        <div class="role-name" data-i18n="teacher_mode">先生モード</div>
+        <div class="role-desc">宿題作成・進捗管理</div>
+      </a>
+      <a href="student.html" class="role-card">
+        <div class="role-icon">👨‍🎓</div>
+        <div class="role-name" data-i18n="student_mode">生徒モード</div>
+        <div class="role-desc">学習・AIチューター</div>
+      </a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script>
+    I18n.init();
+
+    function switchLang(lang) {
+      I18n.load(lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>
