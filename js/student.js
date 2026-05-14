@@ -128,7 +128,7 @@ function renderFC(container) {
                flex-direction:column; align-items:center; justify-content:center; gap:12px;
                box-shadow:var(--shadow); transition:all 0.3s; margin-bottom:24px;">
         <div style="font-size:3rem; font-weight:800; color:var(--primary);">
-          <ruby>${card.ja}<rt>${card.reading}</rt></ruby>
+          <ruby id="fc-ruby">${card.ja}<rt id="fc-rt" style="visibility:hidden">${card.reading}</rt></ruby>
         </div>
         <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}', this)">🔊</button>
         <div id="fc-translation" style="display:none; font-size:1.3rem; color:var(--text); margin-top:8px;">${translation}</div>
@@ -149,6 +149,8 @@ function renderFC(container) {
 function flipCard(el) {
   if (fcFlipped) return;
   fcFlipped = true;
+  const rt = document.getElementById('fc-rt');
+  if (rt) rt.style.visibility = 'visible';
   document.getElementById('fc-translation').style.display = 'block';
   el.querySelector('div:last-child').style.display = 'none';
   document.getElementById('fc-actions').style.display = 'flex';
