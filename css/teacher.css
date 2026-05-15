@@ -1,174 +1,216 @@
+/* ── Layout ── */
 .teacher-layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 248px 1fr;
   min-height: 100vh;
 }
 
+/* ── Sidebar ── */
 .sidebar {
-  background: #1a2740;
+  background: linear-gradient(180deg, #1A237E 0%, #283593 100%);
   color: #fff;
-  padding: 24px 16px;
+  padding: 0 12px 24px;
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar .logo {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #fff;
+  padding: 24px 8px 20px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
-
-.sidebar .logo {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
-  padding: 12px 8px 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  margin-bottom: 8px;
-}
-
 .sidebar a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  color: rgba(255,255,255,0.7);
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.65);
   text-decoration: none;
-  font-size: 0.95rem;
-  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
 }
-.sidebar a:hover, .sidebar a.active {
-  background: rgba(255,255,255,0.12);
+.sidebar a:hover {
+  background: rgba(255,255,255,0.1);
   color: #fff;
 }
+.sidebar a.active {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 #7986CB;
+}
 
+/* ── Main content ── */
 .main-content {
-  padding: 32px;
+  padding: 36px 40px;
   overflow-y: auto;
+  min-height: 100vh;
+  background: var(--bg);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
-
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
+/* ── Stat cards ── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
 }
-
 .stat-card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
+.stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+}
+.stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--primary), #7986CB); }
+.stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--success), #00e5bb); }
+.stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent), #ffb347); }
+
 .stat-card .stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 6px;
+  letter-spacing: -0.03em;
 }
 .stat-card .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
-  margin-top: 4px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
+/* ── Homework form ── */
 .homework-form {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 24px;
-  box-shadow: var(--shadow);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
   margin-bottom: 24px;
+  border: 1px solid var(--border);
 }
-
 .homework-form h2 {
-  margin-bottom: 16px;
-  font-size: 1.1rem;
+  margin-bottom: 20px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
 }
-
 .form-row {
   display: flex;
   gap: 12px;
   align-items: flex-end;
 }
-
 .form-group {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .form-group label {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.form-group input, .form-group select {
-  padding: 10px 14px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-group input:focus, .form-group select:focus {
-  border-color: var(--primary);
-}
-
+/* ── Homework preview ── */
 .homework-preview {
   background: var(--bg);
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 16px;
-  white-space: pre-wrap;
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  margin-top: 18px;
   font-size: 0.9rem;
   line-height: 1.8;
   display: none;
+  border: 1px solid var(--border);
 }
 
+/* ── Students table ── */
 .students-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--card);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
 }
-
+.students-table thead {
+  background: linear-gradient(135deg, #E8EAF6, #F4F6FB);
+}
 .students-table th {
-  background: #f0f4f8;
-  padding: 12px 16px;
+  padding: 14px 18px;
   text-align: left;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
-
 .students-table td {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
   font-size: 0.9rem;
+  vertical-align: middle;
 }
-
 .students-table tr:last-child td { border-bottom: none; }
-.students-table tr:hover td { background: #fafbfc; }
-
-.level-badge {
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
+.students-table tbody tr {
+  transition: background 0.15s;
 }
-.level-beginner { background: #e8f5e9; color: #388e3c; }
-.level-elementary { background: #e3f2fd; color: #1976d2; }
-.level-intermediate { background: #fff3e0; color: #f57c00; }
-.level-advanced { background: #fce4ec; color: #c62828; }
+.students-table tbody tr:hover td { background: #F8F9FE; }
+
+/* ── Level badges ── */
+.level-badge {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+}
+.level-beginner    { background: #E0F7F3; color: #006a52; }
+.level-elementary  { background: var(--primary-light); color: var(--primary-dark); }
+.level-intermediate { background: var(--warning-light); color: #8a6914; }
+.level-advanced    { background: var(--danger-light); color: #c62828; }
+
+/* ── Billing page ── */
+#billing-status-area .card { margin-bottom: 16px; }
