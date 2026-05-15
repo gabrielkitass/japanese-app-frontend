@@ -3,161 +3,249 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理ダッシュボード</title>
+  <title>管理者ダッシュボード</title>
   <link rel="stylesheet" href="css/common.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    body { padding: 32px; max-width: 1100px; margin: 0 auto; }
-    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-    .admin-title { font-size: 1.5rem; font-weight: 800; }
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-    .kpi-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
-    .kpi-value { font-size: 2rem; font-weight: 800; }
-    .kpi-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
-    .kpi-positive { color: var(--success); }
-    .kpi-warning { color: var(--accent); }
-    .kpi-primary { color: var(--primary); }
-    .section { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
-    .section h2 { font-size: 1rem; margin-bottom: 16px; color: var(--text-muted); }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background: #0f172a; color: #e2e8f0; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+    /* ── Header ── */
+    .admin-header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .admin-logo { font-size: 1.1rem; font-weight: 800; color: #f1f5f9; display: flex; align-items: center; gap: 10px; }
+    .admin-logo .badge {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .admin-user { font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 14px; }
+    .admin-logout {
+      padding: 6px 16px;
+      background: transparent;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .admin-logout:hover { border-color: #ef4444; color: #ef4444; }
+
+    /* ── Layout ── */
+    .admin-body { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px 22px;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: #6366f1; }
+    .stat-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; color: #f1f5f9; line-height: 1; }
+    .stat-sub { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
+    .stat-card.green .stat-value { color: #4ade80; }
+    .stat-card.red .stat-value   { color: #f87171; }
+    .stat-card.yellow .stat-value { color: #fbbf24; }
+    .stat-card.blue .stat-value  { color: #60a5fa; }
+
+    /* ── Section ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
+
+    /* ── Table ── */
+    .admin-table-wrap { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-bottom: 32px; }
     table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-    td { padding: 10px 12px; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
-    tr:last-child td { border-bottom: none; }
-    .status-active { color: var(--success); font-weight: 600; }
-    .status-trial { color: var(--accent); font-weight: 600; }
-    .status-past_due { color: var(--danger); font-weight: 600; }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+    }
+    tbody tr { border-bottom: 1px solid #334155; transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(99,102,241,0.06); }
+    tbody td { padding: 14px 16px; font-size: 0.875rem; color: #cbd5e1; vertical-align: middle; }
+    .teacher-name { font-weight: 600; color: #f1f5f9; }
+    .teacher-email { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+
+    /* ── Status badge ── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .status-trial    { background: #1e3a5f; color: #60a5fa; }
+    .status-active   { background: #14532d; color: #4ade80; }
+    .status-cancelled{ background: #3b1f1f; color: #f87171; }
+    .status-suspended{ background: #3f3f46; color: #a1a1aa; }
+
+    /* ── Trial info ── */
+    .trial-days { font-weight: 700; }
+    .trial-days.urgent  { color: #f87171; }
+    .trial-days.warning { color: #fbbf24; }
+    .trial-days.ok      { color: #4ade80; }
+
+    /* ── Action buttons ── */
+    .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-xs {
+      padding: 5px 11px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .btn-xs:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-extend  { background: #1e3a5f; color: #60a5fa; }
+    .btn-extend:hover:not(:disabled)   { background: #1e40af; color: #fff; }
+    .btn-suspend { background: #3f3f46; color: #a1a1aa; }
+    .btn-suspend:hover:not(:disabled)  { background: #b91c1c; color: #fff; }
+    .btn-activate{ background: #14532d; color: #4ade80; }
+    .btn-activate:hover:not(:disabled) { background: #15803d; color: #fff; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: #22c55e;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 200;
+      transition: opacity 0.3s, transform 0.3s;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.error { background: #ef4444; }
+
+    .loading-row td { text-align: center; padding: 40px; color: #475569; }
   </style>
 </head>
 <body>
-  <div class="admin-header">
-    <div>
-      <div class="admin-title">🎌 管理ダッシュボード</div>
-      <div style="color:var(--text-muted); font-size:0.85rem;">gabkitass716@gmail.com</div>
+
+<header class="admin-header">
+  <div class="admin-logo">
+    🎌 にほんごアプリ
+    <span class="badge">Admin</span>
+  </div>
+  <div class="admin-user">
+    <span id="admin-name">—</span>
+    <button class="admin-logout" onclick="doLogout()">ログアウト</button>
+  </div>
+</header>
+
+<div class="admin-body">
+
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">先生数</div>
+      <div class="stat-value" id="st-teachers">—</div>
+      <div class="stat-sub">登録済み教室</div>
     </div>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <span id="last-updated" style="font-size:0.8rem; color:var(--text-muted);"></span>
-      <button class="btn btn-ghost" onclick="loadAll()">🔄 更新</button>
-      <button class="btn" style="background:#fdecea; color:var(--danger);" onclick="Auth.logout()">ログアウト</button>
+    <div class="stat-card blue">
+      <div class="stat-label">生徒数</div>
+      <div class="stat-value" id="st-students">—</div>
+      <div class="stat-sub">全生徒合計</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">月次売上 (予測)</div>
+      <div class="stat-value" id="st-revenue">—</div>
+      <div class="stat-sub">¥1,000 × 生徒数</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">API コスト (30日)</div>
+      <div class="stat-value" id="st-cost">—</div>
+      <div class="stat-sub" id="st-tokens">— トークン</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">利益 (予測)</div>
+      <div class="stat-value" id="st-profit">—</div>
+      <div class="stat-sub">売上 − API − サーバー</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-label">本日 API 使用</div>
+      <div class="stat-value" id="st-today">—</div>
+      <div class="stat-sub">トークン</div>
     </div>
   </div>
 
-  <div id="error-msg" class="error-msg" style="display:none; margin-bottom:24px;"></div>
-
-  <!-- KPI -->
-  <div class="kpi-grid" id="kpi-grid">
-    <div class="kpi-card"><div class="kpi-value kpi-primary" id="kpi-teachers">—</div><div class="kpi-label">教室数（先生）</div></div>
-    <div class="kpi-card"><div class="kpi-value kpi-primary" id="kpi-students">—</div><div class="kpi-label">生徒数</div></div>
-    <div class="kpi-card"><div class="kpi-value kpi-positive" id="kpi-revenue">—</div><div class="kpi-label">月間収入</div></div>
-    <div class="kpi-card"><div class="kpi-value kpi-warning" id="kpi-cost">—</div><div class="kpi-label">月間APIコスト</div></div>
-    <div class="kpi-card"><div class="kpi-value kpi-positive" id="kpi-profit">—</div><div class="kpi-label">月間利益</div></div>
-    <div class="kpi-card"><div class="kpi-value" id="kpi-tokens">—</div><div class="kpi-label">今日のトークン</div></div>
+  <div class="section-header">
+    <div class="section-title">先生一覧</div>
+    <button class="btn-xs btn-extend" onclick="loadAll()" style="font-size:0.8rem; padding:7px 14px;">🔄 更新</button>
   </div>
 
-  <!-- 収支グラフ -->
-  <div class="section">
-    <h2>📊 収支バランス（今月）</h2>
-    <canvas id="profit-chart" height="60"></canvas>
-  </div>
-
-  <!-- 教室別使用量 -->
-  <div class="section">
-    <h2>🏫 教室別使用量</h2>
-    <table id="usage-table">
-      <thead><tr><th>先生名</th><th>メール</th><th>生徒数</th><th>月間トークン</th><th>ステータス</th></tr></thead>
-      <tbody id="usage-tbody"><tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">読み込み中...</td></tr></tbody>
+  <div class="admin-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>先生</th>
+          <th>生徒数</th>
+          <th>ステータス</th>
+          <th>トライアル残日数</th>
+          <th>登録日</th>
+          <th>アクション</th>
+        </tr>
+      </thead>
+      <tbody id="teachers-tbody">
+        <tr class="loading-row"><td colspan="6">読み込み中...</td></tr>
+      </tbody>
     </table>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.error('SW registration failed:', err));
-      });
-    }
-  </script>
-  <script>
-    let currentUser = null;
+</div>
 
-    document.addEventListener('DOMContentLoaded', () => {
-      currentUser = Auth.requireAuth('teacher');
-      if (!currentUser) return;
-      if (currentUser.email !== 'gabkitass716@gmail.com') {
-        document.body.innerHTML = '<div style="padding:40px; text-align:center; color:red;">管理者専用ページです</div>';
-        return;
-      }
-      loadAll();
-    });
+<div id="toast"></div>
 
-    async function loadAll() {
-      document.getElementById('last-updated').textContent = '更新中...';
-      await Promise.all([loadStats(), loadUsage()]);
-      document.getElementById('last-updated').textContent = `最終更新: ${new Date().toLocaleTimeString('ja-JP')}`;
-    }
-
-    async function loadStats() {
-      try {
-        const data = await API.request('/api/admin/stats');
-        document.getElementById('kpi-teachers').textContent = data.teachers;
-        document.getElementById('kpi-students').textContent = data.students;
-        document.getElementById('kpi-revenue').textContent = `¥${data.revenue_jpy.toLocaleString()}`;
-        document.getElementById('kpi-cost').textContent = `¥${data.estimated_cost_jpy.toLocaleString()}`;
-        document.getElementById('kpi-profit').textContent = `¥${data.profit_jpy.toLocaleString()}`;
-        document.getElementById('kpi-tokens').textContent = data.tokens_today.toLocaleString();
-        renderProfitChart(data);
-      } catch (err) {
-        document.getElementById('error-msg').textContent = err.message;
-        document.getElementById('error-msg').style.display = 'block';
-      }
-    }
-
-    async function loadUsage() {
-      try {
-        const data = await API.request('/api/admin/usage');
-        const tbody = document.getElementById('usage-tbody');
-        if (!data.teachers.length) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">データなし</td></tr>';
-          return;
-        }
-        tbody.innerHTML = data.teachers.map(t => `
-          <tr>
-            <td>${t.name}</td>
-            <td style="color:var(--text-muted)">${t.email}</td>
-            <td>${t.student_count}</td>
-            <td>${parseInt(t.tokens_month).toLocaleString()} tokens</td>
-            <td><span class="status-${t.subscription_status || 'trial'}">${t.subscription_status || 'trial'}</span></td>
-          </tr>
-        `).join('');
-      } catch (err) {
-        document.getElementById('usage-tbody').innerHTML = `<tr><td colspan="5" style="color:var(--danger)">${err.message}</td></tr>`;
-      }
-    }
-
-    function renderProfitChart(data) {
-      const ctx = document.getElementById('profit-chart');
-      if (window._profitChart) window._profitChart.destroy();
-      window._profitChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['収入', 'APIコスト', 'インフラ', '利益'],
-          datasets: [{
-            data: [data.revenue_jpy, data.estimated_cost_jpy, 1125, data.profit_jpy],
-            backgroundColor: ['#27AE60', '#FF6B35', '#E74C3C', '#4A90D9'],
-            borderRadius: 8,
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { callback: v => `¥${v.toLocaleString()}` } } }
-        }
-      });
-    }
-  </script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>
