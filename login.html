@@ -503,7 +503,7 @@
     // すでにログイン済みならリダイレクト
     if (Auth.isLoggedIn()) {
       const user = Auth.getUser();
-      window.location.href = user?.is_admin ? '/admin.html' : user?.role === 'teacher' ? '/teacher.html' : '/student.html';
+      window.location.href = user?.role === 'teacher' ? '/teacher.html' : '/student.html';
     }
 
     function showTab(name, el) {

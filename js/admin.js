@@ -1,9 +1,6 @@
 (() => {
   const user = Auth.requireAuth('teacher');
-  if (!user || !user.is_admin) {
-    window.location.href = '/login.html';
-    return;
-  }
+  if (!user) return;
   document.getElementById('admin-name').textContent = user.name;
 
   function showToast(msg, isError = false) {
@@ -82,6 +79,7 @@
   async function loadStats() {
     try {
       const data = await API.request('/api/admin/stats');
+      if (data.error) { showToast('権限なし: ' + data.error, true); return; }
       document.getElementById('st-teachers').textContent = data.teachers;
       document.getElementById('st-students').textContent = data.students;
       document.getElementById('st-revenue').textContent = fmtYen(data.revenue_jpy);
