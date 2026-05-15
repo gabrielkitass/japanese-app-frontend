@@ -48,7 +48,7 @@
       <!-- タブコンテンツが動的に挿入される -->
     </div>
 
-    <section id="tab-flashcard" class="tab-panel" hidden>
+    <section id="tab-flashcard" class="student-content" hidden>
       <!-- セットアップ画面 -->
       <div id="fc-setup">
         <div class="fc-controls">
@@ -75,13 +75,16 @@
         </div>
         <div class="fc-card-area">
           <div class="fc-card" id="fc-card">
-            <div class="fc-front">
-              <div class="fc-japanese" id="fc-japanese"></div>
-              <div class="fc-reading" id="fc-reading"></div>
-            </div>
-            <div class="fc-back" hidden>
-              <div class="fc-meaning" id="fc-meaning"></div>
-              <div class="fc-example" id="fc-example"></div>
+            <div class="fc-card-inner">
+              <div class="fc-card-front">
+                <div class="fc-japanese" id="fc-japanese"></div>
+                <div class="fc-reading" id="fc-reading"></div>
+                <div style="color:var(--text-muted); font-size:0.8rem; margin-top:16px;">タップで答えを見る</div>
+              </div>
+              <div class="fc-card-back">
+                <div class="fc-meaning" id="fc-meaning"></div>
+                <div class="fc-example" id="fc-example" style="font-size:0.85rem; color:var(--text-muted); margin-top:8px;"></div>
+              </div>
             </div>
           </div>
           <div class="fc-actions" id="fc-actions" hidden>

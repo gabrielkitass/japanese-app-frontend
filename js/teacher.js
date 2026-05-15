@@ -1,6 +1,10 @@
 let currentHomework = null;
 let currentUser = null;
 
+function escapeHtml(str) {
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   I18n.init();
   if (typeof Auth !== 'undefined') {
@@ -32,6 +36,7 @@ async function loadDashboard() {
     document.getElementById('stat-students').textContent = data.student_count;
     document.getElementById('stat-homework').textContent = data.homework_this_week;
     document.getElementById('stat-active').textContent = data.active_today;
+    loadSentHistory();
   } catch (err) {
     document.getElementById('stat-students').textContent = '—';
   }
@@ -89,6 +94,7 @@ async function doGenerate(topic, level, btnId, previewId, actionsId) {
         </div>`).join('')}
     `;
     actions.style.display = 'block';
+    populateStudentDropdown();
   } catch (err) {
     showError(err.message);
   } finally {
@@ -424,17 +430,10 @@ async function suggestHomeworkFromFlashcards(studentId, studentName, btn) {
 }
 
 function applyHomeworkSuggestion(suggestion) {
-  // 宿題生成フォームにテーマをセットして閉じる
-  const themeInput = document.getElementById('hw-theme');
-  if (themeInput) {
-    themeInput.value = suggestion.theme;
-    document.getElementById('fc-stats-modal')?.remove();
-    // 宿題タブに切り替え（存在する場合）
-    const hwTab = document.querySelector('[data-tab="homework"]');
-    if (hwTab) hwTab.click();
-  } else {
-    alert(`宿題テーマ「${suggestion.theme}」を宿題生成フォームに入力してください`);
-  }
+  document.getElementById('fc-stats-modal')?.remove();
+  showPage('homework', document.querySelector('.sidebar a[href="#homework"]'));
+  const topicInput = document.getElementById('hw-topic');
+  if (topicInput) topicInput.value = suggestion.theme;
 }
 
 async function openBillingPortal() {
@@ -460,4 +459,85 @@ async function cancelSubscription() {
   } catch (err) {
     alert(err.message);
   }
+}
+
+async function populateStudentDropdown() {
+  const sel = document.getElementById('hw-target-student');
+  const qsel = document.getElementById('quick-target-student');
+  if (!sel && !qsel) return;
+  try {
+    const data = await API.request('/api/auth/students');
+    const options = (data.students || []).map(s =>
+      `<option value="${s.id}">${escapeHtml(s.name)}</option>`
+    ).join('');
+    if (sel) sel.innerHTML = '<option value="">👤 特定の生徒に送る...</option>' + options;
+    if (qsel) qsel.innerHTML = '<option value="">👤 特定の生徒に送る...</option>' + options;
+  } catch {}
+}
+
+async function sendToStudent() {
+  if (!currentHomework) return;
+  const sel = document.getElementById('hw-target-student') || document.getElementById('quick-target-student');
+  const studentId = sel?.value;
+  if (!studentId) { alert('生徒を選択してください'); return; }
+  const btn = document.getElementById('send-to-student-btn');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner dark"></span>';
+  try {
+    const topicEl = document.getElementById('hw-topic') || document.getElementById('quick-topic');
+    const levelEl = document.getElementById('hw-level');
+    await API.request('/api/homework/assign-individual', {
+      method: 'POST',
+      body: JSON.stringify({
+        studentId,
+        homework: currentHomework,
+        topic: topicEl?.value || '日常会話',
+        level: levelEl?.value || 'beginner'
+      })
+    });
+    btn.innerHTML = '✅ 送信しました！';
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2500);
+  } catch (err) {
+    showError(err.message);
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
+}
+
+async function loadSentHistory() {
+  try {
+    const data = await API.request('/api/teacher/homework/sent');
+    const sent = data.sent || [];
+
+    // Find or create the history card in the dashboard
+    let histCard = document.getElementById('sent-hw-history');
+    if (!histCard) {
+      histCard = document.createElement('div');
+      histCard.id = 'sent-hw-history';
+      histCard.className = 'card';
+      histCard.style.marginTop = '16px';
+      document.getElementById('page-dashboard').appendChild(histCard);
+    }
+
+    histCard.innerHTML = `
+      <h2 style="font-size:1rem; margin-bottom:12px; color:var(--text-muted);">📋 最近配布した宿題</h2>
+      ${sent.length === 0
+        ? '<div style="color:var(--text-muted); font-size:0.85rem;">まだ宿題を配布していません</div>'
+        : sent.slice(0, 5).map(h => {
+            const date = new Date(h.created_at).toLocaleDateString('ja-JP', {month:'short', day:'numeric'});
+            const submitRate = h.total_sent > 0 ? Math.round(h.submitted_count / h.total_sent * 100) : 0;
+            return `<div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-weight:600;">${escapeHtml(h.topic || '日常会話')}</div>
+                <div style="font-size:0.78rem; color:var(--text-muted);">${date} · ${h.level} · ${h.total_sent}人に配布</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.85rem; font-weight:700; color:${submitRate >= 70 ? 'var(--success)' : 'var(--accent)'};">${submitRate}% 提出</div>
+                ${h.avg_score ? `<div style="font-size:0.75rem; color:var(--text-muted);">平均 ${Math.round(h.avg_score)}点</div>` : ''}
+              </div>
+            </div>`;
+          }).join('')}
+    `;
+  } catch {} // silently fail if endpoint not ready
 }

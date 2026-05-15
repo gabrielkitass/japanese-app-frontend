@@ -46,5 +46,14 @@
   "fc_correct": "わかった！",
   "fc_loading": "カードを読み込み中...",
   "fc_session_done": "セッション完了！",
-  "fc_score": "正解率"
+  "fc_score": "正解率",
+  "homework_history": "宿題履歴",
+  "submitted": "提出済み",
+  "score_label": "スコア",
+  "no_history": "まだ提出した宿題はありません",
+  "send_to_student": "この生徒に送る",
+  "homework_sent": "配布済み宿題",
+  "individual_send": "個別配布",
+  "ai_tutor": "AIチューター",
+  "pronunciation": "発音練習"
 }

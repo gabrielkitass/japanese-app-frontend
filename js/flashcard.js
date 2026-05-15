@@ -50,17 +50,16 @@ const Flashcard = (() => {
     document.getElementById('fc-example').textContent =
       card.example_sentence || '';
 
-    document.querySelector('.fc-back').hidden = true;
-    document.querySelector('.fc-front').hidden = false;
+    document.getElementById('fc-card').classList.remove('flipped');
     document.getElementById('fc-actions').hidden = true;
     updateProgress();
     startTime = Date.now();
   }
 
   function flip() {
-    if (document.querySelector('.fc-back').hidden) {
-      document.querySelector('.fc-front').hidden = true;
-      document.querySelector('.fc-back').hidden = false;
+    const card = document.getElementById('fc-card');
+    if (!card.classList.contains('flipped')) {
+      card.classList.add('flipped');
       document.getElementById('fc-actions').hidden = false;
     }
   }
@@ -68,7 +67,10 @@ const Flashcard = (() => {
   async function answer(isCorrect) {
     const card = cards[currentIndex];
     const responseTimeMs = Date.now() - startTime;
-    if (isCorrect) correctCount++;
+    if (isCorrect) {
+      correctCount++;
+      if (typeof addXP === 'function') addXP(5);
+    }
     try {
       await API.request('/api/flashcards/result', {
         method: 'POST',

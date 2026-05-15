@@ -77,113 +77,23 @@ function switchTab(tab, btnEl) {
     btnEl.classList.add('active');
   }
   const content = document.getElementById('tab-content');
+  const fcSection = document.getElementById('tab-flashcard');
+
+  if (tab === 'flashcard') {
+    content.style.display = 'none';
+    fcSection.hidden = false;
+    return;
+  }
+
+  content.style.display = '';
+  fcSection.hidden = true;
+
   if (tab === 'homework') renderHomeworkTab(content);
-  else if (tab === 'flashcard') renderFlashcardTab(content);
   else if (tab === 'chat') renderChatTab(content);
   else if (tab === 'progress') renderProgressTab(content).catch(() => {});
   else if (tab === 'settings') renderSettingsTab(content);
 }
 
-// フラッシュカードデータ（ブラジル人向け日常語彙）
-const FLASHCARDS = [
-  { ja: '野菜', reading: 'やさい', pt: 'Verdura / Legume', en: 'Vegetable' },
-  { ja: '値段', reading: 'ねだん', pt: 'Preço', en: 'Price' },
-  { ja: '電車', reading: 'でんしゃ', pt: 'Trem / Metrô', en: 'Train' },
-  { ja: '駅', reading: 'えき', pt: 'Estação', en: 'Station' },
-  { ja: '病院', reading: 'びょういん', pt: 'Hospital', en: 'Hospital' },
-  { ja: '薬', reading: 'くすり', pt: 'Remédio', en: 'Medicine' },
-  { ja: '仕事', reading: 'しごと', pt: 'Trabalho', en: 'Work' },
-  { ja: '休み', reading: 'やすみ', pt: 'Descanso / Folga', en: 'Day off' },
-  { ja: '学校', reading: 'がっこう', pt: 'Escola', en: 'School' },
-  { ja: '友達', reading: 'ともだち', pt: 'Amigo(a)', en: 'Friend' },
-  { ja: '家族', reading: 'かぞく', pt: 'Família', en: 'Family' },
-  { ja: '食べ物', reading: 'たべもの', pt: 'Comida', en: 'Food' },
-];
-
-let fcIndex = 0;
-let fcFlipped = false;
-let fcCorrect = 0;
-let fcTotal = 0;
-
-function renderFlashcardTab(container) {
-  fcIndex = 0; fcFlipped = false; fcCorrect = 0; fcTotal = 0;
-  const shuffled = [...FLASHCARDS].sort(() => Math.random() - 0.5);
-  window._fcCards = shuffled;
-  renderFC(container);
-}
-
-function renderFC(container) {
-  const card = window._fcCards[fcIndex];
-  const lang = I18n.getCurrentLang();
-  const translation = lang === 'pt' ? card.pt : lang === 'en' ? card.en : card.reading;
-
-  container.innerHTML = `
-    <div style="text-align:center; padding:16px 0;">
-      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:16px;">
-        ${fcIndex + 1} / ${window._fcCards.length}
-        &nbsp;|&nbsp; ✅ ${fcCorrect} 正解
-      </div>
-      <div class="progress-bar" style="margin-bottom:24px;">
-        <div class="progress-fill" style="width:${((fcIndex) / window._fcCards.length) * 100}%"></div>
-      </div>
-      <div id="fc-card" onclick="flipCard(this)"
-        style="background:var(--card); border:2px solid var(--border); border-radius:20px;
-               padding:40px 24px; cursor:pointer; min-height:200px; display:flex;
-               flex-direction:column; align-items:center; justify-content:center; gap:12px;
-               box-shadow:var(--shadow); transition:all 0.3s; margin-bottom:24px;">
-        <div style="font-size:3rem; font-weight:800; color:var(--primary);">
-          <ruby id="fc-ruby">${card.ja}<rt id="fc-rt" style="visibility:hidden">${card.reading}</rt></ruby>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
-          <button class="tts-btn" style="font-size:1.5rem;" onclick="event.stopPropagation(); TTS.speakJapanese('${card.ja}', this)">🔊</button>
-          <button class="btn-pron" onclick="event.stopPropagation(); Pronunciation.init('${card.ja.replace(/'/g, "\\'")}', '${card.reading.replace(/'/g, "\\'")}');" title="発音練習" style="font-size:1.5rem; background:none; border:none; cursor:pointer;">🎤</button>
-        </div>
-        <div id="fc-translation" style="display:none; font-size:1.3rem; color:var(--text); margin-top:8px;">${translation}</div>
-        <div style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">タップで答えを見る</div>
-      </div>
-      <div id="fc-actions" style="display:none; display:flex; gap:12px; justify-content:center;">
-        <button class="btn" style="background:#fdecea; color:var(--danger); flex:1;" onclick="fcAnswer(false)">
-          ❌ わからない
-        </button>
-        <button class="btn" style="background:#e8f5e9; color:var(--success); flex:1;" onclick="fcAnswer(true)">
-          ✅ わかった！
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-function flipCard(el) {
-  if (fcFlipped) return;
-  fcFlipped = true;
-  const rt = document.getElementById('fc-rt');
-  if (rt) rt.style.visibility = 'visible';
-  document.getElementById('fc-translation').style.display = 'block';
-  el.querySelector('div:last-child').style.display = 'none';
-  document.getElementById('fc-actions').style.display = 'flex';
-  el.style.borderColor = 'var(--primary)';
-}
-
-function fcAnswer(correct) {
-  fcTotal++;
-  if (correct) { fcCorrect++; addXP(5); }
-  fcFlipped = false;
-  fcIndex++;
-  const container = document.getElementById('tab-content');
-  if (fcIndex >= window._fcCards.length) {
-    container.innerHTML = `
-      <div style="text-align:center; padding:40px 20px;">
-        <div style="font-size:3rem; margin-bottom:16px;">${fcCorrect >= window._fcCards.length * 0.8 ? '🎉' : '💪'}</div>
-        <h2 style="margin-bottom:8px;">${fcCorrect} / ${window._fcCards.length} 正解</h2>
-        <p style="color:var(--text-muted); margin-bottom:24px;">+${fcCorrect * 5} XP 獲得！</p>
-        <button class="btn btn-primary" onclick="renderFlashcardTab(document.getElementById('tab-content'))">
-          もう一度
-        </button>
-      </div>`;
-  } else {
-    renderFC(container);
-  }
-}
 
 async function renderHomeworkTab(container) {
   container.innerHTML = `
@@ -292,16 +202,6 @@ async function hwSubmit(score) {
   }
 }
 
-function answerQuestion(btn, isCorrect) {
-  const options = btn.closest('.options-list').querySelectorAll('.option-btn');
-  options.forEach(b => b.disabled = true);
-  btn.classList.add(isCorrect ? 'correct' : 'incorrect');
-  if (isCorrect) {
-    addXP(10);
-  } else {
-    options.forEach(b => { if (b.dataset.correct) b.classList.add('correct'); });
-  }
-}
 
 function renderChatTab(container) {
   container.innerHTML = `
@@ -446,15 +346,26 @@ async function renderProgressTab(container) {
       }).join('')}`;
   } catch { /* ignore */ }
 
-  // 宿題履歴（直近の提出済み）
+  // 宿題履歴（APIから取得）
   try {
+    const hwHist = await API.request('/api/student/homework/history');
+    const history = hwHist.history || [];
     document.getElementById('hw-progress-card').innerHTML = `
-      <h3 style="font-size:0.9rem; margin-bottom:12px; color:var(--text-muted);">📝 宿題</h3>
-      <div style="color:var(--text-muted); font-size:0.85rem;">
-        ${I18n.getCurrentLang() === 'pt' ? '⭐ Continue praticando para ver seu histórico aqui!' :
-          I18n.getCurrentLang() === 'en' ? '⭐ Keep practicing to see your history here!' :
-          '⭐ 学習を続けて履歴を積み上げましょう！'}
-      </div>`;
+      <h3 style="font-size:0.9rem; margin-bottom:12px; color:var(--text-muted);">📝 宿題履歴</h3>
+      ${history.length === 0
+        ? '<div style="color:var(--text-muted); font-size:0.85rem;">まだ提出した宿題はありません</div>'
+        : history.map(h => {
+            const date = new Date(h.created_at).toLocaleDateString('ja-JP', {month:'short', day:'numeric'});
+            const scoreColor = h.score >= 80 ? 'var(--success)' : h.score >= 60 ? 'var(--warning)' : 'var(--danger)';
+            return `<div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-weight:600; font-size:0.9rem;">${escapeHtml(h.topic || '日常会話')}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${date} · ${h.level}</div>
+              </div>
+              <div style="font-size:1.3rem; font-weight:800; color:${scoreColor};">${h.score}点</div>
+            </div>`;
+          }).join('')}
+    `;
   } catch { /* ignore */ }
 }
 

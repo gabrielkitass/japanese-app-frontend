@@ -32,11 +32,19 @@
       💳 課金管理
     </a>
     <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
-      <div class="lang-switcher" style="justify-content: center;">
+      <div class="lang-switcher" style="justify-content: center; margin-bottom: 12px;">
         <button class="lang-btn active" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('ja', this)">日</button>
         <button class="lang-btn" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('en', this)">EN</button>
         <button class="lang-btn" style="color:#fff; border-color:rgba(255,255,255,0.4)" onclick="switchLang('pt', this)">PT</button>
       </div>
+      <button onclick="if(confirm('ログアウトしますか？')) Auth.logout()"
+        style="width:100%; padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+               border-radius:10px; color:rgba(255,255,255,0.75); font-size:0.88rem; font-weight:600;
+               cursor:pointer; transition:all 0.18s; display:flex; align-items:center; justify-content:center; gap:6px;"
+        onmouseover="this.style.background='rgba(255,255,255,0.16)'; this.style.color='#fff';"
+        onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.color='rgba(255,255,255,0.75)';">
+        🚪 ログアウト
+      </button>
     </div>
   </nav>
 
@@ -77,6 +85,14 @@
           <button class="btn btn-success" onclick="sendToAll()">
             📤 <span data-i18n="send_to_all">全員に配布</span>
           </button>
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+            <select id="quick-target-student" style="flex:1; padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-size:0.9rem; outline:none; background:var(--card); color:var(--text);">
+              <option value="">👤 特定の生徒に送る...</option>
+            </select>
+            <button class="btn btn-ghost" onclick="sendToStudent()" id="send-to-student-btn" style="white-space:nowrap;">
+              📤 個別送信
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -110,6 +126,14 @@
           <button class="btn btn-success" onclick="sendToAll()">
             📤 <span data-i18n="send_to_all">全員に配布</span>
           </button>
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+            <select id="hw-target-student" style="flex:1; padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-size:0.9rem; outline:none; background:var(--card); color:var(--text);">
+              <option value="">👤 特定の生徒に送る...</option>
+            </select>
+            <button class="btn btn-ghost" onclick="sendToStudent()" id="send-to-student-btn" style="white-space:nowrap;">
+              📤 個別送信
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -46,5 +46,14 @@
   "fc_correct": "Got it!",
   "fc_loading": "Loading cards...",
   "fc_session_done": "Session complete!",
-  "fc_score": "Score"
+  "fc_score": "Score",
+  "homework_history": "Homework History",
+  "submitted": "Submitted",
+  "score_label": "Score",
+  "no_history": "No submitted homework yet",
+  "send_to_student": "Send to Student",
+  "homework_sent": "Sent Homework",
+  "individual_send": "Send Individually",
+  "ai_tutor": "AI Tutor",
+  "pronunciation": "Pronunciation"
 }

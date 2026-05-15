@@ -11,81 +11,477 @@
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link rel="stylesheet" href="css/common.css">
   <style>
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .login-box { width: 100%; max-width: 400px; }
-    .logo { text-align: center; margin-bottom: 32px; }
-    .logo-icon { font-size: 3rem; display: block; margin-bottom: 8px; }
-    .logo-title { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-    .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
-    .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-weight: 600;
-           color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px;
-                        font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
-    .form-group input:focus { border-color: var(--primary); }
-    .submit-btn { width: 100%; padding: 14px; font-size: 1rem; margin-top: 8px; }
-    .lang-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
-    .divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 16px 0; }
+    /* ── Reset & base ── */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      background: var(--bg);
+    }
+
+    /* ── Split layout ── */
+    .login-wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ── LEFT PANEL (desktop only) ── */
+    .login-left {
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 44px;
+      background: linear-gradient(160deg, #1A237E 0%, #283593 40%, #5C6BC0 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-left::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -80px;
+      width: 380px;
+      height: 380px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .login-left::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -60px;
+      width: 280px;
+      height: 280px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+
+    .left-top {}
+    .left-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 48px;
+    }
+    .left-brand-icon {
+      font-size: 2.8rem;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
+    }
+    .left-brand-name {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .left-brand-sub {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .left-headline {
+      color: #fff;
+      font-size: 1.75rem;
+      font-weight: 900;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .left-tagline {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+
+    .feature-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .feature-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 99px;
+      padding: 10px 18px;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+    }
+    .feature-pill:hover {
+      background: rgba(255,255,255,0.16);
+    }
+    .feature-pill-icon {
+      font-size: 1.1rem;
+    }
+
+    .left-testimonial {
+      position: relative;
+      z-index: 1;
+    }
+    .testimonial-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 20px 22px;
+      backdrop-filter: blur(8px);
+    }
+    .testimonial-quote {
+      color: rgba(255,255,255,0.9);
+      font-size: 0.88rem;
+      line-height: 1.65;
+      font-style: italic;
+      margin-bottom: 14px;
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .testimonial-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #FF6B6B, #FFB300);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .testimonial-name {
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .testimonial-role {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.75rem;
+      margin-top: 1px;
+    }
+
+    /* ── RIGHT PANEL (form) ── */
+    .login-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      background: #fff;
+      min-height: 100vh;
+    }
+    .login-right-inner {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Mobile: top bar with lang switcher */
+    .right-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+    }
+    .mobile-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mobile-logo-icon {
+      font-size: 1.6rem;
+    }
+    .mobile-logo-name {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .lang-bar {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Heading */
+    .login-heading {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+    .login-subheading {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 24px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      color: var(--primary);
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(92,107,192,0.14);
+    }
+
+    /* Input groups with icons */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-icon-wrap {
+      position: relative;
+    }
+    .input-icon-wrap .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+      line-height: 1;
+    }
+    .input-icon-wrap input {
+      padding-left: 42px;
+      width: 100%;
+      padding-top: 13px;
+      padding-bottom: 13px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .input-icon-wrap input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(92,107,192,0.12);
+      background: #fff;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+      margin-top: 8px;
+      border-radius: 10px;
+    }
+
+    /* Divider note */
+    .form-note {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .form-note .note-icon {
+      margin-right: 4px;
+    }
+
+    /* Desktop breakpoint */
+    @media (min-width: 900px) {
+      .login-left {
+        display: flex;
+        width: 44%;
+        flex-shrink: 0;
+      }
+      .login-right {
+        min-height: auto;
+      }
+      .mobile-logo {
+        display: none;
+      }
+      .right-top-bar {
+        justify-content: flex-end;
+      }
+    }
+
+    /* Smaller mobile polish */
+    @media (max-width: 480px) {
+      .login-right {
+        padding: 24px 18px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <div class="lang-bar">
-      <button class="lang-btn active" onclick="switchLang('ja', this)">日本語</button>
-      <button class="lang-btn" onclick="switchLang('en', this)">English</button>
-      <button class="lang-btn" onclick="switchLang('pt', this)">Português</button>
-    </div>
+  <div class="login-wrapper">
 
-    <div class="logo">
-      <span class="logo-icon">🎌</span>
-      <div class="logo-title" data-i18n="app_name">にほんごアプリ</div>
-    </div>
+    <!-- LEFT PANEL: desktop only -->
+    <div class="login-left">
+      <div class="left-top">
+        <div class="left-brand">
+          <div class="left-brand-icon">🎌</div>
+          <div>
+            <div class="left-brand-name">にほんごアプリ</div>
+            <div class="left-brand-sub">AI-powered Japanese classroom</div>
+          </div>
+        </div>
 
-    <div class="card">
-      <div class="tabs">
-        <div class="tab active" onclick="showTab('login', this)" data-i18n="login">ログイン</div>
-        <div class="tab" onclick="showTab('register', this)">新規登録</div>
+        <div class="left-headline">愛知の教室を、<br>もっとスマートに。</div>
+        <div class="left-tagline">
+          ブラジル人の生徒さんのために設計された<br>
+          AI宿題生成・進捗管理プラットフォーム。
+        </div>
+
+        <div class="feature-pills">
+          <div class="feature-pill">
+            <span class="feature-pill-icon">🤖</span>
+            AI宿題生成 — テーマを入れるだけ
+          </div>
+          <div class="feature-pill">
+            <span class="feature-pill-icon">📊</span>
+            進捗管理 — リアルタイムで把握
+          </div>
+          <div class="feature-pill">
+            <span class="feature-pill-icon">🇧🇷</span>
+            ポルトガル語対応 — 生徒の母国語で
+          </div>
+        </div>
       </div>
 
-      <!-- ログイン -->
-      <div id="tab-login">
-        <div class="form-group">
-          <label>メールアドレス</label>
-          <input type="email" id="login-email" placeholder="teacher@example.com">
+      <div class="left-testimonial">
+        <div class="testimonial-card">
+          <div class="testimonial-quote">
+            "Esse app mudou minha rotina de estudos. Antes eu não entendia nada, agora consigo me comunicar no trabalho em japonês!"
+          </div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">🇧🇷</div>
+            <div>
+              <div class="testimonial-name">Carlos Silva</div>
+              <div class="testimonial-role">豊田市在住 — 製造業 3年目</div>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>パスワード</label>
-          <input type="password" id="login-password" placeholder="••••••" onkeypress="if(event.key==='Enter') doLogin()">
-        </div>
-        <div id="login-error" style="display:none;" class="error-msg" style="margin-bottom:12px;"></div>
-        <button class="btn btn-primary submit-btn" onclick="doLogin()" id="login-btn">
-          <span data-i18n="login">ログイン</span>
-        </button>
-      </div>
-
-      <!-- 新規登録（先生のみ） -->
-      <div id="tab-register" style="display:none;">
-        <div class="form-group">
-          <label>お名前</label>
-          <input type="text" id="reg-name" placeholder="山田 花子">
-        </div>
-        <div class="form-group">
-          <label>メールアドレス</label>
-          <input type="email" id="reg-email" placeholder="teacher@example.com">
-        </div>
-        <div class="form-group">
-          <label>パスワード（6文字以上）</label>
-          <input type="password" id="reg-password" placeholder="••••••" onkeypress="if(event.key==='Enter') doRegister()">
-        </div>
-        <div id="reg-error" style="display:none;" class="error-msg" style="margin-bottom:12px;"></div>
-        <button class="btn btn-primary submit-btn" onclick="doRegister()" id="reg-btn">
-          先生として登録
-        </button>
-        <div class="divider">生徒のアカウントは先生が作成します</div>
       </div>
     </div>
+
+    <!-- RIGHT PANEL: form -->
+    <div class="login-right">
+      <div class="login-right-inner">
+
+        <div class="right-top-bar">
+          <div class="mobile-logo">
+            <span class="mobile-logo-icon">🎌</span>
+            <span class="mobile-logo-name">にほんごアプリ</span>
+          </div>
+          <div class="lang-bar">
+            <button class="lang-btn active" onclick="switchLang('ja', this)">日本語</button>
+            <button class="lang-btn" onclick="switchLang('en', this)">English</button>
+            <button class="lang-btn" onclick="switchLang('pt', this)">PT</button>
+          </div>
+        </div>
+
+        <div class="login-heading">おかえりなさい 👋</div>
+        <div class="login-subheading">アカウントにログインしてください</div>
+
+        <div class="tabs">
+          <div class="tab active" onclick="showTab('login', this)" data-i18n="login">ログイン</div>
+          <div class="tab" onclick="showTab('register', this)">新規登録</div>
+        </div>
+
+        <!-- ログイン -->
+        <div id="tab-login">
+          <div class="form-group">
+            <label>メールアドレス</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📧</span>
+              <input type="email" id="login-email" placeholder="teacher@example.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>パスワード</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="login-password" placeholder="••••••••" onkeypress="if(event.key==='Enter') doLogin()">
+            </div>
+          </div>
+          <div id="login-error" style="display:none;" class="error-msg" style="margin-bottom:12px;"></div>
+          <button class="btn btn-primary submit-btn" onclick="doLogin()" id="login-btn">
+            <span data-i18n="login">ログイン</span>
+          </button>
+        </div>
+
+        <!-- 新規登録（先生のみ） -->
+        <div id="tab-register" style="display:none;">
+          <div class="form-group">
+            <label>お名前</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="reg-name" placeholder="山田 花子">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>メールアドレス</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📧</span>
+              <input type="email" id="reg-email" placeholder="teacher@example.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>パスワード（6文字以上）</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="reg-password" placeholder="••••••••" onkeypress="if(event.key==='Enter') doRegister()">
+            </div>
+          </div>
+          <div id="reg-error" style="display:none;" class="error-msg" style="margin-bottom:12px;"></div>
+          <button class="btn btn-primary submit-btn" onclick="doRegister()" id="reg-btn">
+            先生として登録
+          </button>
+          <div class="form-note">
+            <span class="note-icon">ℹ️</span>
+            生徒のアカウントは先生が作成します
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <script src="js/config.js"></script>

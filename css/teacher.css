@@ -42,6 +42,7 @@
   font-weight: 500;
   transition: all 0.18s;
   letter-spacing: 0.01em;
+  position: relative;
 }
 .sidebar a:hover {
   background: rgba(255,255,255,0.1);
@@ -52,6 +53,30 @@
   color: #fff;
   font-weight: 700;
   box-shadow: inset 3px 0 0 #7986CB;
+}
+
+/* Sidebar hover tooltip */
+.sidebar a[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(26,35,126,0.95);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.sidebar a[data-tooltip]:hover::after {
+  opacity: 1;
 }
 
 /* ── Main content ── */
@@ -195,9 +220,13 @@
 }
 .students-table tr:last-child td { border-bottom: none; }
 .students-table tbody tr {
-  transition: background 0.15s;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 .students-table tbody tr:hover td { background: #F8F9FE; }
+.students-table tbody tr:hover td:first-child {
+  border-left: 3px solid var(--primary);
+  padding-left: 15px;
+}
 
 /* ── Level badges ── */
 .level-badge {
@@ -211,6 +240,71 @@
 .level-elementary  { background: var(--primary-light); color: var(--primary-dark); }
 .level-intermediate { background: var(--warning-light); color: #8a6914; }
 .level-advanced    { background: var(--danger-light); color: #c62828; }
+
+/* ── Sent homework list ── */
+.sent-homework-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+.sent-homework-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.sent-homework-item:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.sent-hw-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.sent-hw-info {
+  flex: 1;
+  min-width: 0;
+}
+.sent-hw-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sent-hw-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sent-hw-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.sent-hw-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
 /* ── Billing page ── */
 #billing-status-area .card { margin-bottom: 16px; }

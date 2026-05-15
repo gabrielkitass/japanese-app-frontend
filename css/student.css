@@ -109,24 +109,54 @@
   gap: 8px;
 }
 
-/* ── Flashcard (legacy inline) ── */
+/* ── Flashcard with flip animation ── */
 .fc-card {
+  perspective: 1000px;
+  cursor: pointer;
+  min-height: 200px;
+}
+.fc-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.fc-card.flipped .fc-card-inner {
+  transform: rotateY(180deg);
+}
+.fc-card-front,
+.fc-card-back {
+  position: absolute;
+  inset: 0;
   background: var(--card);
   border-radius: 20px;
   padding: 36px 24px;
   text-align: center;
-  cursor: pointer;
   box-shadow: var(--shadow);
   border: 2px solid var(--border);
-  transition: all 0.25s;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-.fc-card:active { transform: scale(0.98); }
+.fc-card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, var(--primary-light), #fff);
+  border-color: var(--primary);
+}
+.fc-card:active .fc-card-inner { transform: scale(0.98); }
+.fc-card.flipped:active .fc-card-inner { transform: rotateY(180deg) scale(0.98); }
 
 /* ── Chat ── */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 148px);
+  /* account for iOS safe area inset at bottom via env() */
+  height: calc(100vh - 148px - env(safe-area-inset-bottom, 0px));
 }
 .chat-messages {
   flex: 1;
@@ -268,6 +298,41 @@
   box-shadow: var(--shadow);
 }
 .lang-option-btn .flag { font-size: 1.6rem; }
+
+/* ── Homework score badge (circle) ── */
+.homework-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  position: relative;
+  background: conic-gradient(var(--primary) calc(var(--pct, 0) * 1%), var(--border) 0);
+  box-shadow: var(--shadow-sm);
+}
+.homework-badge::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--card);
+}
+.homework-badge-value {
+  position: relative;
+  z-index: 1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+.homework-badge.badge-perfect { --pct: 100; }
+.homework-badge.badge-good    { background: conic-gradient(var(--success) calc(var(--pct, 0) * 1%), var(--border) 0); }
+.homework-badge.badge-good .homework-badge-value { color: var(--success); }
 
 /* ── Settings tab ── */
 .settings-card {
