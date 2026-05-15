@@ -27,7 +27,14 @@ function switchLang(lang, btnEl) {
 }
 
 async function loadDashboard() {
-  document.getElementById('stat-students').textContent = '—';
+  try {
+    const data = await API.request('/api/teacher/stats');
+    document.getElementById('stat-students').textContent = data.student_count;
+    document.getElementById('stat-homework').textContent = data.homework_this_week;
+    document.getElementById('stat-active').textContent = data.active_today;
+  } catch (err) {
+    document.getElementById('stat-students').textContent = '—';
+  }
 }
 
 async function quickGenerate() {
@@ -57,10 +64,30 @@ async function doGenerate(topic, level, btnId, previewId, actionsId) {
   try {
     const data = await API.generateHomework(topic, level);
     currentHomework = data.homework;
+    const hw = data.homework;
+    const questions = hw.questions || [];
     preview.style.display = 'block';
-    preview.textContent = typeof data.homework === 'object'
-      ? JSON.stringify(data.homework, null, 2)
-      : data.homework;
+    preview.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <span style="font-size:1rem; font-weight:700;">${hw.title || topic}</span>
+        <span style="margin-left:8px; font-size:0.8rem; color:var(--text-muted); background:var(--bg); padding:2px 8px; border-radius:12px;">${level}</span>
+      </div>
+      ${questions.map((q, i) => `
+        <div style="background:var(--bg); border-radius:10px; padding:14px; margin-bottom:10px;">
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">問題 ${i + 1}</div>
+          <div style="font-weight:600; margin-bottom:10px;">${q.question}</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${(q.options || []).map((opt, j) => `
+              <div style="padding:8px 12px; border-radius:8px; font-size:0.9rem;
+                background:${j === q.correct ? '#e8f5e9' : 'var(--card)'};
+                border:1px solid ${j === q.correct ? 'var(--success)' : 'var(--border)'};
+                color:${j === q.correct ? 'var(--success)' : 'var(--text)'};">
+                ${j === q.correct ? '✅ ' : ''}${opt}
+              </div>`).join('')}
+          </div>
+          ${q.explanation ? `<div style="margin-top:8px; font-size:0.82rem; color:var(--text-muted);">💡 ${q.explanation}</div>` : ''}
+        </div>`).join('')}
+    `;
     actions.style.display = 'block';
   } catch (err) {
     showError(err.message);
@@ -71,7 +98,30 @@ async function doGenerate(topic, level, btnId, previewId, actionsId) {
 }
 
 async function sendToAll() {
-  alert('配布機能は Phase 2 で実装予定です。');
+  if (!currentHomework) return;
+  const btn = event.target;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> 配布中...';
+  try {
+    const topicEl = document.getElementById('hw-topic') || document.getElementById('quick-topic');
+    const levelEl = document.getElementById('hw-level');
+    const data = await API.request('/api/homework/assign', {
+      method: 'POST',
+      body: JSON.stringify({
+        homework: currentHomework,
+        topic: topicEl?.value || '日常会話',
+        level: levelEl?.value || 'beginner'
+      })
+    });
+    btn.innerHTML = `✅ ${data.assigned}人に配布しました！`;
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 3000);
+    loadDashboard();
+  } catch (err) {
+    showError(err.message);
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
 }
 
 async function loadStudents() {
