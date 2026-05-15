@@ -9,6 +9,12 @@ const API = (() => {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
     const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/login.html';
+      return;
+    }
     if (response.status === 429) throw new Error(I18n.t('rate_limit_error'));
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
