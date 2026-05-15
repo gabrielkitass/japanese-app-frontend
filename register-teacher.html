@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>先生登録 — にほんごアプリ</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    html, body { height: 100%; margin: 0; background: var(--bg); }
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .reg-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow);
+    }
+    .reg-logo { font-size: 2.4rem; text-align: center; margin-bottom: 8px; }
+    .reg-title { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
+    .reg-sub { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 28px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px;
+      font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text);
+      transition: border-color 0.2s; box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+    .btn-reg {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+    }
+    .btn-reg:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error-msg { color: var(--danger, #e53e3e); font-size: 0.85rem; margin-top: 12px; display: none; padding: 10px 14px; background: #fff5f5; border-radius: 8px; border-left: 3px solid var(--danger, #e53e3e); }
+    .login-link { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+    .login-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .badge-teacher {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, #5C6BC0, #3949AB);
+      color: #fff; padding: 4px 14px; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 700; margin: 0 auto 20px; display: block; text-align: center; width: fit-content;
+      margin-left: auto; margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="reg-card">
+    <div class="reg-logo">🎌</div>
+    <div class="reg-title">にほんごアプリ</div>
+    <div class="reg-sub">先生アカウント登録</div>
+    <div class="badge-teacher">👩‍🏫 先生専用</div>
+
+    <div class="form-group">
+      <label>お名前</label>
+      <input type="text" id="name" placeholder="山田 花子" autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label>メールアドレス</label>
+      <input type="email" id="email" placeholder="teacher@example.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>パスワード（6文字以上）</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+
+    <button class="btn-reg" id="reg-btn" onclick="doRegister()">📝 先生として登録</button>
+    <div class="error-msg" id="err"></div>
+
+    <div class="login-link">
+      すでに登録済みの方は <a href="/login.html">ログイン</a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (Auth.isLoggedIn()) {
+      const u = Auth.getUser();
+      window.location.href = u?.is_admin ? '/admin.html' : u?.role === 'teacher' ? '/teacher.html' : '/student.html';
+    }
+
+    async function doRegister() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const errEl = document.getElementById('err');
+      const btn = document.getElementById('reg-btn');
+      errEl.style.display = 'none';
+      if (!name || !email || !password) { errEl.textContent = '全項目を入力してください'; errEl.style.display = 'block'; return; }
+      btn.disabled = true;
+      btn.textContent = '登録中...';
+      try {
+        const data = await Auth.register(name, email, password);
+        window.location.href = '/teacher.html';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '📝 先生として登録';
+      }
+    }
+  </script>
+</body>
+</html>

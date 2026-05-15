@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生徒登録 — にほんごアプリ</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    html, body { height: 100%; margin: 0; background: var(--bg); }
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .reg-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow);
+    }
+    .reg-logo { font-size: 2.4rem; text-align: center; margin-bottom: 8px; }
+    .reg-title { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
+    .reg-sub { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
+    .teacher-banner {
+      background: linear-gradient(135deg, #E8EAF6, #F4F6FB);
+      border: 1px solid #C5CAE9;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 22px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px;
+      font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text);
+      transition: border-color 0.2s; box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+    .btn-reg {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, #43A047, #2E7D32);
+      color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+    }
+    .btn-reg:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error-msg { color: var(--danger, #e53e3e); font-size: 0.85rem; margin-top: 12px; display: none; padding: 10px 14px; background: #fff5f5; border-radius: 8px; border-left: 3px solid var(--danger, #e53e3e); }
+    .login-link { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+    .login-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .invalid-link { text-align: center; padding: 40px 20px; color: var(--danger, #e53e3e); }
+    .lang-row { display: flex; gap: 10px; }
+    .lang-row .form-group { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="reg-card" id="reg-card">
+    <div class="reg-logo">🎌</div>
+    <div class="reg-title">にほんごアプリ</div>
+    <div class="reg-sub">生徒アカウント登録</div>
+    <div class="teacher-banner" id="teacher-banner">先生のクラスに参加中...</div>
+
+    <div class="form-group">
+      <label>あなたの名前 / Your Name</label>
+      <input type="text" id="name" placeholder="Maria Silva" autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label>メールアドレス / Email</label>
+      <input type="email" id="email" placeholder="maria@example.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>パスワード（6文字以上）/ Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <div class="lang-row">
+      <div class="form-group">
+        <label>母語 / Native Language</label>
+        <select id="native_language">
+          <option value="pt">🇧🇷 Português</option>
+          <option value="en">🇺🇸 English</option>
+          <option value="ja">🇯🇵 日本語</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>レベル / Level</label>
+        <select id="level">
+          <option value="beginner">初級 N5</option>
+          <option value="elementary">初中級 N4</option>
+          <option value="intermediate">中級 N3</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn-reg" id="reg-btn" onclick="doRegister()">🎓 登録する</button>
+    <div class="error-msg" id="err"></div>
+
+    <div class="login-link">
+      すでに登録済みの方は <a href="/login.html">ログイン</a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const teacherId = params.get('t');
+
+    if (!teacherId) {
+      document.getElementById('reg-card').innerHTML =
+        '<div class="invalid-link"><div style="font-size:2rem;">⚠️</div><p>無効なリンクです。<br>先生から招待リンクをもらってください。</p></div>';
+    } else {
+      document.getElementById('teacher-banner').textContent = '先生のクラスに参加登録';
+    }
+
+    if (Auth.isLoggedIn()) {
+      const u = Auth.getUser();
+      window.location.href = u?.role === 'teacher' ? '/teacher.html' : '/student.html';
+    }
+
+    async function doRegister() {
+      if (!teacherId) return;
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const native_language = document.getElementById('native_language').value;
+      const level    = document.getElementById('level').value;
+      const errEl    = document.getElementById('err');
+      const btn      = document.getElementById('reg-btn');
+      errEl.style.display = 'none';
+      if (!name || !email || !password) {
+        errEl.textContent = '全項目を入力してください / Please fill all fields';
+        errEl.style.display = 'block';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = '登録中...';
+      try {
+        const res = await fetch(CONFIG.API_BASE_URL + '/api/auth/student-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, teacher_id: teacherId, native_language, level })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('auth_user', JSON.stringify({ ...data.user, role: 'student' }));
+        API.setToken(data.token);
+        window.location.href = '/student.html';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '🎓 登録する';
+      }
+    }
+  </script>
+</body>
+</html>

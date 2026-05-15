@@ -22,6 +22,27 @@ function showPage(name, linkEl) {
 
   if (name === 'students') loadStudents();
   if (name === 'billing') loadBilling();
+  if (name === 'add-student') renderInviteLink();
+}
+
+function renderInviteLink() {
+  if (!currentUser) return;
+  const base = window.location.origin;
+  const link = `${base}/register-student.html?t=${currentUser.id}`;
+  const el = document.getElementById('invite-link');
+  if (el) el.value = link;
+}
+
+function copyInviteLink() {
+  const el = document.getElementById('invite-link');
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => {
+    const msg = document.getElementById('copy-msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2500); }
+  }).catch(() => {
+    el.select();
+    document.execCommand('copy');
+  });
 }
 
 function switchLang(lang, btnEl) {
