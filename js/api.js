@@ -12,7 +12,7 @@ const API = (() => {
     if (response.status === 429) throw new Error(I18n.t('rate_limit_error'));
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || `${I18n.t('error_generic')} (${response.status})`);
+      throw new Error(err.error || err.message || `${I18n.t('error_generic')} (${response.status})`);
     }
     return response.json();
   }
