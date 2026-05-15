@@ -81,6 +81,7 @@ function switchTab(tab, btnEl) {
   else if (tab === 'flashcard') renderFlashcardTab(content);
   else if (tab === 'chat') renderChatTab(content);
   else if (tab === 'progress') renderProgressTab(content);
+  else if (tab === 'settings') renderSettingsTab(content);
 }
 
 // フラッシュカードデータ（ブラジル人向け日常語彙）
@@ -336,6 +337,52 @@ function renderProgressTab(container) {
       </div>
     </div>
   `;
+}
+
+function renderSettingsTab(container) {
+  const user = (typeof Auth !== 'undefined') ? Auth.getUser() : null;
+  const lang = I18n.getCurrentLang();
+  const langs = [
+    { code: 'ja', label: '🇯🇵 日本語' },
+    { code: 'en', label: '🇺🇸 English' },
+    { code: 'pt', label: '🇧🇷 Português' }
+  ];
+
+  container.innerHTML = `
+    <h2 style="font-size:1.1rem; margin-bottom:20px;">${I18n.t('settings')}</h2>
+
+    ${user ? `
+    <div class="settings-card">
+      <div class="settings-avatar">${escapeHtml(user.name ? user.name[0].toUpperCase() : '?')}</div>
+      <div class="settings-user-info">
+        <div class="settings-username">${escapeHtml(user.name || '')}</div>
+        <div class="settings-email">${escapeHtml(user.email || '')}</div>
+      </div>
+    </div>` : ''}
+
+    <div class="settings-section">
+      <div class="settings-label">🌐 ${I18n.t('select_language') || '言語'}</div>
+      <div class="settings-lang-btns">
+        ${langs.map(l => `
+          <button class="settings-lang-btn ${l.code === lang ? 'active' : ''}"
+            onclick="selectLang('${l.code}'); renderSettingsTab(document.getElementById('tab-content'))">
+            ${l.label}
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button class="btn btn-danger settings-logout-btn" onclick="confirmLogout()">
+        🚪 ${I18n.t('logout')}
+      </button>
+    </div>
+  `;
+}
+
+function confirmLogout() {
+  const lang = I18n.getCurrentLang();
+  const msg = lang === 'pt' ? 'Deseja sair?' : lang === 'en' ? 'Log out?' : 'ログアウトしますか？';
+  if (confirm(msg) && typeof Auth !== 'undefined') Auth.logout();
 }
 
 function escapeHtml(str) {
