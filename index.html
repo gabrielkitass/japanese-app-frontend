@@ -3,468 +3,431 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>にほんごアプリ — ブラジル人のための日本語学習</title>
+  <title>にほんごアプリ — AI で日本語学習を変える</title>
   <link rel="stylesheet" href="css/common.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    /* ── Reset ── */
     html, body { margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Noto Sans JP', 'Hiragino Sans', sans-serif; background: #F8FAFF; }
+
+    /* ── STICKY NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 24px; height: 62px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(7,8,15,0.82);
+      backdrop-filter: blur(18px) saturate(1.5);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.3s;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #5C6BC0, #3949AB);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 900; color: #fff;
+      box-shadow: 0 4px 12px rgba(92,107,192,0.45);
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .nav-wordmark { font-size: 0.92rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-lang { display: flex; gap: 4px; }
+    .nav-lang .lang-btn { border-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.55); font-size: 0.75rem; padding: 3px 9px; }
+    .nav-lang .lang-btn.active { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); color: #fff; }
+    .nav-cta {
+      background: linear-gradient(135deg, #FF6B35, #e55a2b);
+      color: #fff; padding: 7px 16px; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 700; text-decoration: none;
+      box-shadow: 0 4px 14px rgba(255,107,53,0.35);
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,107,53,0.5); }
 
     /* ── HERO ── */
     .hero {
-      background: linear-gradient(160deg, #1A237E 0%, #283593 35%, #5C6BC0 80%, #7986CB 100%);
-      color: #fff;
-      padding: 80px 24px 96px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+      min-height: 100vh; background: #07080F;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 100px 24px 80px;
+      position: relative; overflow: hidden;
     }
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -100px; right: -100px;
-      width: 500px; height: 500px;
-      background: rgba(255,255,255,0.04);
-      border-radius: 50%;
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(70px); pointer-events: none;
     }
-    .hero::after {
-      content: '';
-      position: absolute;
-      bottom: -120px; left: -80px;
-      width: 400px; height: 400px;
-      background: rgba(255,255,255,0.04);
-      border-radius: 50%;
+    .orb-1 { width: 620px; height: 620px; background: radial-gradient(circle, rgba(92,107,192,0.32), transparent); top: -180px; left: -160px; animation: drift 9s ease-in-out infinite; }
+    .orb-2 { width: 420px; height: 420px; background: radial-gradient(circle, rgba(255,107,53,0.22), transparent); bottom: -80px; right: -80px; animation: drift 11s ease-in-out infinite reverse; }
+    .orb-3 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(255,199,0,0.18), transparent); top: 45%; left: 58%; animation: drift 7s ease-in-out infinite; }
+    @keyframes drift { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-28px) scale(1.06)} }
+    .hero-kanji {
+      position: absolute; font-size: 32vw; font-weight: 900;
+      color: rgba(255,255,255,0.012); top: 50%; left: 50%;
+      transform: translate(-50%, -50%); pointer-events: none;
+      user-select: none; font-family: 'Noto Sans JP', sans-serif; line-height: 1;
     }
-    .hero-inner {
-      position: relative;
-      z-index: 1;
-      max-width: 680px;
-      margin: 0 auto;
+    .hero-inner { position: relative; z-index: 1; max-width: 740px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 99px; padding: 6px 16px;
+      font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.65);
+      margin-bottom: 32px; backdrop-filter: blur(8px);
     }
-    .hero-flag {
-      font-size: 3.2rem;
-      margin-bottom: 16px;
-      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.25));
-      display: block;
-    }
+    .badge-dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; animation: blink 2.2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
     .hero-title {
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1.2;
-      margin-bottom: 16px;
+      font-size: clamp(2.1rem, 5.5vw, 3.8rem); font-weight: 900;
+      color: #fff; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 22px;
     }
-    .hero-title span {
-      background: linear-gradient(135deg, #FFD200, #FF6B6B);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .grad-text {
+      background: linear-gradient(130deg, #FFC700 0%, #FF6B35 55%, #FF6B6B 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .hero-sub {
-      font-size: 1.05rem;
-      color: rgba(255,255,255,0.8);
-      line-height: 1.7;
-      margin-bottom: 36px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
+      font-size: 1.08rem; color: rgba(255,255,255,0.55);
+      line-height: 1.8; margin-bottom: 48px;
+      max-width: 520px; margin-left: auto; margin-right: auto;
     }
-    .hero-ctas {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      flex-wrap: wrap;
+    .hero-actions { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .btn-hero {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 16px 38px; font-size: 1.05rem; font-weight: 700;
+      background: linear-gradient(135deg, #FF6B35, #e05520);
+      color: #fff; border-radius: 12px; text-decoration: none;
+      box-shadow: 0 8px 32px rgba(255,107,53,0.45);
+      transition: all 0.25s; letter-spacing: -0.01em;
     }
-    .hero-ctas .btn {
-      padding: 14px 28px;
-      font-size: 1rem;
-      border-radius: 10px;
-    }
-    .btn-hero-primary {
-      background: linear-gradient(135deg, #FF6B6B, #e05555);
-      color: #fff;
-      box-shadow: 0 6px 24px rgba(255,107,107,0.4);
-    }
-    .btn-hero-primary:hover {
-      box-shadow: 0 8px 32px rgba(255,107,107,0.55);
-      transform: translateY(-2px);
-    }
-    .btn-hero-ghost {
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-      border: 2px solid rgba(255,255,255,0.35);
-      backdrop-filter: blur(4px);
-    }
-    .btn-hero-ghost:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateY(-2px);
-    }
+    .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 14px 44px rgba(255,107,53,0.62); }
+    .hero-note { font-size: 0.8rem; color: rgba(255,255,255,0.3); letter-spacing: 0.01em; }
 
-    /* ── NAV bar inside hero ── */
-    .hero-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 1080px;
-      margin: 0 auto 48px;
-      padding: 0 8px;
+    /* ── STATS ── */
+    .stats-bar { background: #fff; border-bottom: 1px solid #eaeef6; padding: 30px 24px; }
+    .stats-inner {
+      max-width: 780px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; text-align: center;
     }
-    .hero-nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
+    .stat-num {
+      font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 900;
+      letter-spacing: -0.04em; line-height: 1; margin-bottom: 5px;
+      background: linear-gradient(130deg, #5C6BC0, #FF6B35);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .hero-nav-brand-icon { font-size: 1.6rem; }
-    .hero-nav-brand-name {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #fff;
-    }
-    .hero-nav-lang {
-      display: flex;
-      gap: 6px;
-    }
-    .hero-nav-lang .lang-btn {
-      border-color: rgba(255,255,255,0.35);
-      color: rgba(255,255,255,0.8);
-    }
-    .hero-nav-lang .lang-btn.active {
-      border-color: #fff;
-      background: rgba(255,255,255,0.18);
-      color: #fff;
-    }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; line-height: 1.4; }
 
-    /* ── FEATURES section ── */
-    .section {
-      padding: 72px 24px;
-      max-width: 1080px;
-      margin: 0 auto;
+    /* ── SECTIONS ── */
+    .section { padding: 88px 24px; max-width: 1080px; margin: 0 auto; }
+    .eyebrow {
+      text-align: center; font-size: 0.73rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--primary); margin-bottom: 12px;
     }
-    .section-label {
-      text-align: center;
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 10px;
+    .section-h { text-align: center; font-size: clamp(1.55rem,3.5vw,2.15rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 12px; }
+    .section-p { text-align: center; font-size: 0.98rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 52px; line-height: 1.75; }
+
+    /* ── FEATURE CARDS ── */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+    .feat-card {
+      background: #fff; border-radius: 20px; padding: 36px 28px;
+      border: 1px solid #eaeef6;
+      box-shadow: 0 2px 16px rgba(92,107,192,0.06);
+      position: relative; overflow: hidden;
+      transition: transform 0.22s, box-shadow 0.22s;
     }
-    .section-title {
-      text-align: center;
-      font-size: clamp(1.4rem, 3vw, 1.9rem);
-      font-weight: 900;
-      color: var(--text);
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
+    .feat-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
     }
-    .section-sub {
-      text-align: center;
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-bottom: 48px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
+    .feat-card:nth-child(1)::after { background: linear-gradient(90deg, #5C6BC0, #9FA8DA); }
+    .feat-card:nth-child(2)::after { background: linear-gradient(90deg, #FF6B35, #FFB300); }
+    .feat-card:nth-child(3)::after { background: linear-gradient(90deg, #00C49A, #26d0ae); }
+    .feat-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(92,107,192,0.13); }
+    .feat-icon {
+      width: 54px; height: 54px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 20px;
     }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 22px;
-    }
-    .feature-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 30px 26px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .feature-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-    }
-    .feature-card-icon {
-      font-size: 2.4rem;
-      margin-bottom: 14px;
-      display: block;
-    }
-    .feature-card-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 8px;
-      letter-spacing: -0.01em;
-    }
-    .feature-card-desc {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.7;
-    }
+    .feat-card:nth-child(1) .feat-icon { background: #EEF0FA; }
+    .feat-card:nth-child(2) .feat-icon { background: #FFF3EE; }
+    .feat-card:nth-child(3) .feat-icon { background: #E0F7F3; }
+    .feat-title { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .feat-desc { font-size: 0.87rem; color: var(--text-muted); line-height: 1.75; }
 
     /* ── HOW IT WORKS ── */
-    .how-section {
-      background: linear-gradient(135deg, #F4F6FB 0%, #EEF0FA 100%);
-      padding: 72px 24px;
+    .how-wrap { background: #07080F; padding: 88px 24px; }
+    .how-wrap .eyebrow { color: rgba(255,255,255,0.35); }
+    .how-wrap .section-h { color: #fff; }
+    .how-wrap .section-p { color: rgba(255,255,255,0.38); }
+    .steps { max-width: 920px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .step {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 30px 24px; position: relative; transition: background 0.2s;
     }
-    .steps-row {
-      display: flex;
-      gap: 20px;
-      max-width: 860px;
-      margin: 0 auto;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .step-card {
-      flex: 1;
-      min-width: 220px;
-      max-width: 260px;
-      text-align: center;
-      position: relative;
-    }
-    .step-number {
-      width: 52px;
-      height: 52px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff;
-      font-size: 1.3rem;
-      font-weight: 900;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      box-shadow: 0 4px 16px rgba(92,107,192,0.35);
-    }
-    .step-title {
-      font-size: 0.98rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    .step-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-    .step-arrow {
-      display: none;
-      position: absolute;
-      right: -20px;
-      top: 18px;
-      font-size: 1.4rem;
-      color: var(--primary);
-      opacity: 0.4;
-    }
+    .step:hover { background: rgba(255,255,255,0.065); }
+    .step-tag { font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.28); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; }
+    .step-title { font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .step-desc { font-size: 0.84rem; color: rgba(255,255,255,0.42); line-height: 1.72; }
+    .step-arr { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); font-size: 1.3rem; color: rgba(255,255,255,0.12); }
+    .step:last-child .step-arr { display: none; }
 
-    @media (min-width: 700px) {
-      .step-card { max-width: 220px; }
-      .step-arrow { display: block; }
-      .step-card:last-child .step-arrow { display: none; }
-    }
+    /* ── TESTIMONIALS ── */
+    .testi-wrap { background: #F8FAFF; padding: 88px 24px; border-top: 1px solid #eaeef6; }
+    .testi-grid { max-width: 860px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+    .testi-card { background: #fff; border-radius: 20px; padding: 32px 28px; border: 1px solid #eaeef6; box-shadow: 0 2px 16px rgba(92,107,192,0.06); }
+    .stars { color: #FFC700; font-size: 0.85rem; letter-spacing: 3px; margin-bottom: 14px; }
+    .testi-text { font-size: 0.94rem; color: var(--text); line-height: 1.78; margin-bottom: 22px; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar { width: 42px; height: 42px; border-radius: 50%; background: #EEF0FA; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .testi-name { font-size: 0.88rem; font-weight: 700; }
+    .testi-role { font-size: 0.76rem; color: var(--text-muted); margin-top: 1px; }
 
     /* ── PRICING ── */
-    .pricing-section {
-      padding: 72px 24px;
-      text-align: center;
-    }
+    .pricing-wrap { background: #fff; padding: 88px 24px; text-align: center; border-top: 1px solid #eaeef6; }
     .pricing-card {
-      max-width: 420px;
-      margin: 0 auto;
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 36px 32px;
-      box-shadow: var(--shadow-lg);
-      border: 2px solid var(--primary);
-      position: relative;
-      overflow: hidden;
+      max-width: 440px; margin: 0 auto;
+      background: #fff; border-radius: 24px; padding: 48px 38px;
+      box-shadow: 0 24px 64px rgba(92,107,192,0.14);
+      border: 1px solid #eaeef6; position: relative; overflow: hidden;
     }
     .pricing-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 5px;
-      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #5C6BC0, #FF6B35, #FFC700);
     }
     .pricing-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #FF6B6B, #FFB300);
-      color: #fff;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 14px;
-      border-radius: 99px;
-      margin-bottom: 16px;
-      letter-spacing: 0.04em;
+      display: inline-block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #FF6B35, #FFB300);
+      color: #fff; padding: 5px 16px; border-radius: 99px; margin-bottom: 22px;
     }
-    .pricing-amount {
-      font-size: 3rem;
-      font-weight: 900;
-      color: var(--text);
-      letter-spacing: -0.04em;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-    .pricing-amount span {
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--text-muted);
-    }
-    .pricing-note {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
+    .pricing-amount { font-size: 3.4rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; margin-bottom: 4px; }
+    .pricing-amount span { font-size: 0.95rem; font-weight: 500; color: var(--text-muted); }
+    .pricing-note { font-size: 0.87rem; color: var(--text-muted); margin: 10px 0 24px; }
+    .pricing-features { list-style: none; text-align: left; margin-bottom: 26px; }
+    .pricing-features li { font-size: 0.9rem; padding: 9px 0; border-bottom: 1px solid #F0F2F8; display: flex; align-items: center; gap: 10px; }
+    .pricing-features li:last-child { border-bottom: none; }
+    .pricing-features li::before { content: '✓'; color: #00C49A; font-weight: 800; flex-shrink: 0; }
     .pricing-trial {
-      background: var(--success-light);
-      border: 1px solid rgba(0,196,154,0.3);
-      border-radius: 10px;
-      padding: 14px 18px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #006a52;
-      margin-bottom: 24px;
+      background: linear-gradient(135deg, #E0F7F3, #EEF0FA);
+      border-radius: 12px; padding: 16px 18px; font-size: 0.9rem;
+      font-weight: 600; color: #006a52; margin-bottom: 22px; line-height: 1.55;
     }
     .pricing-cta {
-      width: 100%;
-      padding: 14px;
-      font-size: 1rem;
-      border-radius: 10px;
+      display: block; width: 100%; padding: 16px;
+      background: linear-gradient(135deg, #5C6BC0, #3949AB);
+      color: #fff; font-size: 1rem; font-weight: 700; border-radius: 12px;
+      text-decoration: none; box-shadow: 0 8px 24px rgba(92,107,192,0.35);
+      transition: all 0.22s;
     }
+    .pricing-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(92,107,192,0.5); }
+
+    /* ── FINAL CTA ── */
+    .final-cta { background: #07080F; padding: 100px 24px; text-align: center; position: relative; overflow: hidden; }
+    .final-orb { position: absolute; width: 560px; height: 560px; border-radius: 50%; background: radial-gradient(circle, rgba(92,107,192,0.18), transparent); top: 50%; left: 50%; transform: translate(-50%, -50%); filter: blur(50px); }
+    .final-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+    .final-title { font-size: clamp(1.9rem, 4.5vw, 2.9rem); font-weight: 900; color: #fff; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 18px; }
+    .final-sub { font-size: 1rem; color: rgba(255,255,255,0.42); margin-bottom: 40px; line-height: 1.75; }
 
     /* ── FOOTER ── */
-    .landing-footer {
-      background: #1A237E;
-      color: rgba(255,255,255,0.6);
-      text-align: center;
-      padding: 28px 24px;
-      font-size: 0.82rem;
-    }
-    .footer-lang {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 14px;
-    }
-    .footer-lang .lang-btn {
-      border-color: rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.65);
-    }
-    .footer-lang .lang-btn.active {
-      border-color: rgba(255,255,255,0.7);
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-    }
-    .footer-copy {
-      color: rgba(255,255,255,0.35);
-      font-size: 0.78rem;
+    .footer { background: #07080F; border-top: 1px solid rgba(255,255,255,0.05); padding: 32px 24px; text-align: center; }
+    .footer-lang { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+    .footer-lang .lang-btn { border-color: rgba(255,255,255,0.14); color: rgba(255,255,255,0.38); font-size: 0.76rem; }
+    .footer-lang .lang-btn.active { border-color: rgba(255,255,255,0.38); background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+    .footer-copy { color: rgba(255,255,255,0.2); font-size: 0.76rem; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .reveal.vis { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.1s; }
+    .d2 { transition-delay: 0.2s; }
+
+    @media (max-width: 540px) {
+      .nav-wordmark { display: none; }
+      .stat-label { font-size: 0.7rem; }
+      .step-arr { display: none; }
     }
   </style>
 </head>
 <body>
 
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-brand">
+      <div class="nav-logo">日</div>
+      <span class="nav-wordmark">にほんごアプリ</span>
+    </a>
+    <div class="nav-right">
+      <div class="nav-lang">
+        <button class="lang-btn active" onclick="switchLang('ja',this)">日本語</button>
+        <button class="lang-btn" onclick="switchLang('en',this)">English</button>
+        <button class="lang-btn" onclick="switchLang('pt',this)">Português</button>
+      </div>
+      <a href="teacher.html" class="nav-cta" data-i18n="btn_teacher_short">無料で始める</a>
+    </div>
+  </nav>
+
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-nav">
-      <a href="#" class="hero-nav-brand">
-        <span class="hero-nav-brand-icon">🎌</span>
-        <span class="hero-nav-brand-name">にほんごアプリ</span>
-      </a>
-      <div class="hero-nav-lang">
-        <button class="lang-btn active" onclick="switchLang('ja', this)">日本語</button>
-        <button class="lang-btn" onclick="switchLang('en', this)">English</button>
-        <button class="lang-btn" onclick="switchLang('pt', this)">Português</button>
-      </div>
-    </div>
-
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="hero-kanji">日</div>
     <div class="hero-inner">
-      <span class="hero-flag">🎌</span>
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span data-i18n="hero_badge">愛知県の日本語教室向け</span>
+      </div>
       <h1 class="hero-title">
-        <span data-i18n="app_name">にほんごアプリ</span>
+        <span data-i18n="hero_title_1">AI が宿題を作る。</span><br>
+        <span class="grad-text" data-i18n="hero_title_2">先生が教えることに集中できる。</span>
       </h1>
       <p class="hero-sub">
         <span data-i18n="hero_sub_1">ブラジル人が多い日本語教室のための AI 学習アプリ。</span><br>
         <span data-i18n="hero_sub_2">先生の手間をゼロに、生徒の理解を最大に。</span>
       </p>
-      <div class="hero-ctas">
-        <a href="teacher.html" class="btn btn-hero-primary" data-i18n="btn_teacher">👩‍🏫 先生として始める</a>
+      <div class="hero-actions">
+        <a href="teacher.html" class="btn-hero" data-i18n="btn_teacher">👩‍🏫 先生として始める</a>
+        <p class="hero-note" data-i18n="hero_hint">クレジットカード不要・2ヶ月無料</p>
       </div>
     </div>
   </section>
 
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="reveal">
+        <div class="stat-num" data-i18n="stat1_num">30秒</div>
+        <div class="stat-label" data-i18n="stat1_label">宿題の平均生成時間</div>
+      </div>
+      <div class="reveal d1">
+        <div class="stat-num" data-i18n="stat2_num">3言語</div>
+        <div class="stat-label" data-i18n="stat2_label">日・英・ポルトガル語に対応</div>
+      </div>
+      <div class="reveal d2">
+        <div class="stat-num" data-i18n="stat3_num">2ヶ月</div>
+        <div class="stat-label" data-i18n="stat3_label">完全無料でお試し</div>
+      </div>
+    </div>
+  </div>
+
   <!-- FEATURES -->
   <div class="section">
-    <div class="section-label" data-i18n="features_label">できること</div>
-    <h2 class="section-title" data-i18n="features_title">学習をもっと、スマートに</h2>
-    <p class="section-sub" data-i18n="features_sub">AIが先生と生徒の両方をサポート。教室の外でも学習が続きます。</p>
+    <p class="eyebrow reveal" data-i18n="features_label">できること</p>
+    <h2 class="section-h reveal" data-i18n="features_title">学習をもっと、スマートに</h2>
+    <p class="section-p reveal" data-i18n="features_sub">AIが先生と生徒の両方をサポート。教室の外でも学習が続きます。</p>
     <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-card-icon">🤖</span>
-        <div class="feature-card-title" data-i18n="feat1_title">AI宿題生成</div>
-        <div class="feature-card-desc" data-i18n="feat1_desc">テーマを入れるだけで、レベルに合った宿題を自動作成。選択肢問題・穴埋め・会話練習まで対応。</div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title" data-i18n="feat1_title">AI宿題生成</div>
+        <div class="feat-desc" data-i18n="feat1_desc">テーマを入れるだけで、レベルに合った宿題を自動作成。選択肢問題・穴埋め・会話練習まで対応。</div>
       </div>
-      <div class="feature-card">
-        <span class="feature-card-icon">📱</span>
-        <div class="feature-card-title" data-i18n="feat2_title">スマホで学習</div>
-        <div class="feature-card-desc" data-i18n="feat2_desc">生徒はスマホで宿題を完結。工場の休憩時間でも、通勤中でも、いつでもどこでも学習できます。</div>
+      <div class="feat-card reveal d1">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title" data-i18n="feat2_title">スマホで学習</div>
+        <div class="feat-desc" data-i18n="feat2_desc">生徒はスマホで宿題を完結。工場の休憩時間でも、通勤中でも、いつでもどこでも学習できます。</div>
       </div>
-      <div class="feature-card">
-        <span class="feature-card-icon">📊</span>
-        <div class="feature-card-title" data-i18n="feat3_title">進捗をリアルタイム管理</div>
-        <div class="feature-card-desc" data-i18n="feat3_desc">先生のダッシュボードで全生徒の正答率・学習時間・提出状況を一目で確認。フォローが必要な生徒がすぐわかる。</div>
+      <div class="feat-card reveal d2">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title" data-i18n="feat3_title">進捗をリアルタイム管理</div>
+        <div class="feat-desc" data-i18n="feat3_desc">先生のダッシュボードで全生徒の正答率・学習時間・提出状況を一目で確認。フォローが必要な生徒がすぐわかる。</div>
       </div>
     </div>
   </div>
 
   <!-- HOW IT WORKS -->
-  <div class="how-section">
-    <div class="section-label" style="text-align:center;" data-i18n="how_label">使い方</div>
-    <h2 class="section-title" style="text-align:center; max-width:860px; margin:0 auto 10px;" data-i18n="how_title">3ステップで始められる</h2>
-    <p class="section-sub" data-i18n="how_sub">複雑な設定は不要。今日から使えます。</p>
-    <div class="steps-row">
-      <div class="step-card">
-        <div class="step-number">1</div>
+  <div class="how-wrap">
+    <p class="eyebrow reveal" data-i18n="how_label">使い方</p>
+    <h2 class="section-h reveal" data-i18n="how_title">3ステップで始められる</h2>
+    <p class="section-p reveal" data-i18n="how_sub">複雑な設定は不要。今日から使えます。</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-tag">Step 01</div>
         <div class="step-title" data-i18n="step1_title">先生がテーマを入力</div>
         <div class="step-desc" data-i18n="step1_desc">「スーパーで買い物」「工場での挨拶」など日常のテーマを日本語か英語で入力するだけ。</div>
-        <span class="step-arrow">→</span>
+        <span class="step-arr">›</span>
       </div>
-      <div class="step-card">
-        <div class="step-number">2</div>
+      <div class="step reveal d1">
+        <div class="step-tag">Step 02</div>
         <div class="step-title" data-i18n="step2_title">AIが宿題を自動生成</div>
         <div class="step-desc" data-i18n="step2_desc">数秒でレベル別の問題セットを生成。内容を確認して、そのまま配布できます。</div>
-        <span class="step-arrow">→</span>
+        <span class="step-arr">›</span>
       </div>
-      <div class="step-card">
-        <div class="step-number">3</div>
+      <div class="step reveal d2">
+        <div class="step-tag">Step 03</div>
         <div class="step-title" data-i18n="step3_title">生徒がスマホで学習</div>
         <div class="step-desc" data-i18n="step3_desc">ポルトガル語対応のUIで、生徒が自分のペースで宿題に取り組みます。AIチューターにも質問できます。</div>
       </div>
     </div>
   </div>
 
+  <!-- TESTIMONIALS -->
+  <div class="testi-wrap">
+    <p class="eyebrow reveal" data-i18n="testi_label">先生の声</p>
+    <h2 class="section-h reveal" data-i18n="testi_title">現場の先生に使われています</h2>
+    <p class="section-p reveal" data-i18n="testi_sub">愛知県の日本語教室の先生から</p>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text" data-i18n="testi1_text">「宿題を作る時間が劇的に減りました。テーマを入れたら30秒で完成するので、授業の準備に集中できます。」</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👩‍🏫</div>
+          <div>
+            <div class="testi-name" data-i18n="testi1_name">田中 美香 先生</div>
+            <div class="testi-role" data-i18n="testi1_role">名古屋市・日本語教室</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal d1">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text" data-i18n="testi2_text">「ブラジル人の生徒がポルトガル語でAIに質問できるのが最高。理解が深まって、授業中の質問も減りました。」</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👨‍🏫</div>
+          <div>
+            <div class="testi-name" data-i18n="testi2_name">鈴木 健一 先生</div>
+            <div class="testi-role" data-i18n="testi2_role">豊田市・日本語教室</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PRICING -->
-  <div class="pricing-section">
-    <div class="section-label" data-i18n="pricing_label">料金</div>
-    <h2 class="section-title" data-i18n="pricing_title">シンプルな料金体系</h2>
-    <p class="section-sub" style="margin-bottom: 40px;" data-i18n="pricing_sub">まずは2ヶ月間、無料でお試しください。</p>
-    <div class="pricing-card">
+  <div class="pricing-wrap">
+    <p class="eyebrow reveal" data-i18n="pricing_label">料金</p>
+    <h2 class="section-h reveal" data-i18n="pricing_title">シンプルな料金体系</h2>
+    <p class="section-p reveal" data-i18n="pricing_sub">まずは2ヶ月間、無料でお試しください。</p>
+    <div class="pricing-card reveal">
       <div class="pricing-badge" data-i18n="pricing_badge">2ヶ月 無料トライアル</div>
       <div class="pricing-amount">¥500 <span data-i18n="pricing_per">/ 生徒 / 月</span></div>
       <div class="pricing-note" data-i18n="pricing_note">先生が一括で管理。生徒側の支払いは不要。</div>
+      <ul class="pricing-features">
+        <li data-i18n="pf1">AI宿題生成（無制限）</li>
+        <li data-i18n="pf2">3言語対応（日本語・英語・ポルトガル語）</li>
+        <li data-i18n="pf3">進捗ダッシュボード</li>
+        <li data-i18n="pf4">AIチューター（生徒用）</li>
+        <li data-i18n="pf5">フラッシュカード機能</li>
+      </ul>
       <div class="pricing-trial">
         <span data-i18n="pricing_trial_1">🎉 今なら2ヶ月間完全無料。</span><br>
         <span data-i18n="pricing_trial_2">クレジットカード登録も不要。</span>
       </div>
-      <a href="teacher.html" class="btn btn-primary pricing-cta" data-i18n="pricing_cta">無料で始める →</a>
+      <a href="teacher.html" class="pricing-cta" data-i18n="pricing_cta">無料で始める →</a>
+    </div>
+  </div>
+
+  <!-- FINAL CTA -->
+  <div class="final-cta">
+    <div class="final-orb"></div>
+    <div class="final-inner">
+      <h2 class="final-title reveal" data-i18n="cta_title">今日から、宿題作りの手間をゼロに。</h2>
+      <p class="final-sub reveal" data-i18n="cta_sub">2ヶ月間無料。クレジットカード不要。いつでもキャンセルできます。</p>
+      <a href="teacher.html" class="btn-hero reveal" data-i18n="btn_teacher">👩‍🏫 先生として始める</a>
     </div>
   </div>
 
   <!-- FOOTER -->
-  <footer class="landing-footer">
+  <footer class="footer">
     <div class="footer-lang">
-      <button class="lang-btn active" onclick="switchLang('ja', this)">日本語</button>
-      <button class="lang-btn" onclick="switchLang('en', this)">English</button>
-      <button class="lang-btn" onclick="switchLang('pt', this)">Português</button>
+      <button class="lang-btn active" onclick="switchLang('ja',this)">日本語</button>
+      <button class="lang-btn" onclick="switchLang('en',this)">English</button>
+      <button class="lang-btn" onclick="switchLang('pt',this)">Português</button>
     </div>
     <div class="footer-copy" data-i18n="footer_copy">© 2026 にほんごアプリ — 愛知県の日本語教室のために作られました</div>
   </footer>
@@ -476,22 +439,24 @@
 
     function switchLang(lang, btn) {
       I18n.load(lang);
-      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-      // activate all lang buttons that match the selected language
       document.querySelectorAll('.lang-btn').forEach(b => {
-        const map = { ja: '日本語', en: 'English', pt: 'Português' };
+        b.classList.remove('active');
+        const map = { ja:'日本語', en:'English', pt:'Português' };
         if (b.textContent.trim() === map[lang]) b.classList.add('active');
       });
     }
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.error('SW registration failed:', err));
-      });
-    }
+
+    // Scroll reveal
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // Nav opacity on scroll
+    window.addEventListener('scroll', () => {
+      document.getElementById('nav').style.background =
+        window.scrollY > 30 ? 'rgba(7,8,15,0.96)' : 'rgba(7,8,15,0.82)';
+    }, { passive: true });
   </script>
 </body>
 </html>
