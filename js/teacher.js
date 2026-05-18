@@ -153,38 +153,44 @@ async function sendToAll() {
 
 async function loadStudents() {
   const tbody = document.getElementById('students-tbody');
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">${I18n.t('loading')}</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">${I18n.t('loading')}</td></tr>`;
 
   try {
     const data = await API.request('/api/auth/students');
     const students = data.students || [];
     if (students.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">まだ生徒がいません。「生徒追加」から追加してください。</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">まだ生徒がいません。「生徒追加」から追加してください。</td></tr>`;
       document.getElementById('stat-students').textContent = '0';
       return;
     }
-    tbody.innerHTML = students.map(s => `
+    tbody.innerHTML = students.map(s => {
+      const submitted = parseInt(s.hw_submitted) || 0;
+      const total = parseInt(s.hw_total) || 0;
+      const pct = total > 0 ? Math.round((submitted / total) * 100) : 0;
+      const lastActive = s.last_active ? new Date(s.last_active).toLocaleDateString('ja-JP') : '—';
+      return `
       <tr>
-        <td>${s.name}</td>
+        <td>${escapeHtml(s.name)}</td>
         <td>${s.native_language === 'pt' ? '🇧🇷 PT' : s.native_language === 'en' ? '🇺🇸 EN' : '🇯🇵 JA'}</td>
         <td><span class="level-badge level-${s.level}">${s.level}</span></td>
-        <td>${s.lessons_completed || 0} レッスン</td>
+        <td>${submitted}/${total} 提出</td>
         <td>
           <div class="progress-bar" style="width:120px;">
-            <div class="progress-fill" style="width:${Math.min(100, (s.lessons_completed || 0) * 10)}%"></div>
+            <div class="progress-fill" style="width:${pct}%"></div>
           </div>
         </td>
+        <td>${lastActive}</td>
         <td>
-          <button class="btn btn-ghost" onclick="showFlashcardStats('${s.id}', '${s.name}')">
+          <button class="btn btn-ghost" onclick="showFlashcardStats('${s.id}', '${escapeHtml(s.name)}')">
             📊 カード進捗
           </button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
     document.getElementById('stat-students').textContent = students.length;
     renderProgressChart(students);
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); padding:16px;">${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--danger); padding:16px;">${err.message}</td></tr>`;
   }
 }
 
