@@ -29,10 +29,10 @@ const API = (() => {
       body: JSON.stringify({ studentId, message, history })
     });
 
-  const generateHomework = (topic, level = 'beginner') =>
+  const generateHomework = (topic, level = 'beginner', context = '') =>
     request(CONFIG.ENDPOINTS.GENERATE_HOMEWORK, {
       method: 'POST',
-      body: JSON.stringify({ topic, level })
+      body: JSON.stringify({ topic, level, context })
     });
 
   const getProgress = (studentId) =>

@@ -1,5 +1,8 @@
 let currentHomework = null;
 let currentUser = null;
+let currentTopic = '';
+let currentLevel = 'beginner';
+let hwEditorMode = false;
 
 function escapeHtml(str) {
   return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -66,52 +69,29 @@ async function loadDashboard() {
 async function quickGenerate() {
   const topic = document.getElementById('quick-topic').value.trim();
   if (!topic) return;
-  await doGenerate(topic, 'beginner', 'quick-btn', 'quick-preview', 'quick-actions');
-}
-
-async function generateHomework() {
-  const topic = document.getElementById('hw-topic').value.trim();
-  const level = document.getElementById('hw-level').value;
-  if (!topic) return;
-  await doGenerate(topic, level, 'gen-btn', 'hw-preview', 'hw-actions');
-}
-
-async function doGenerate(topic, level, btnId, previewId, actionsId) {
-  const btn = document.getElementById(btnId);
-  const preview = document.getElementById(previewId);
-  const actions = document.getElementById(actionsId);
-
+  const btn = document.getElementById('quick-btn');
+  const preview = document.getElementById('quick-preview');
+  const actions = document.getElementById('quick-actions');
+  const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<span class="loading-spinner"></span> ${I18n.t('generating')}`;
+  btn.innerHTML = `<span class="loading-spinner"></span> 生成中...`;
   preview.style.display = 'none';
   actions.style.display = 'none';
-  clearError();
-
   try {
-    const data = await API.generateHomework(topic, level);
+    const data = await API.generateHomework(topic, 'beginner', '');
     currentHomework = data.homework;
+    currentTopic = topic;
+    currentLevel = 'beginner';
     const hw = data.homework;
     const questions = hw.questions || [];
     preview.style.display = 'block';
     preview.innerHTML = `
-      <div style="margin-bottom:12px;">
-        <span style="font-size:1rem; font-weight:700;">${hw.title || topic}</span>
-        <span style="margin-left:8px; font-size:0.8rem; color:var(--text-muted); background:var(--bg); padding:2px 8px; border-radius:12px;">${level}</span>
-      </div>
-      ${questions.map((q, i) => `
+      <div style="margin-bottom:12px;"><span style="font-size:1rem; font-weight:700;">${escapeHtml(hw.title || topic)}</span></div>
+      ${questions.slice(0, 3).map((q, i) => `
         <div style="background:var(--bg); border-radius:10px; padding:14px; margin-bottom:10px;">
           <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">問題 ${i + 1}</div>
-          <div style="font-weight:600; margin-bottom:10px;">${q.question}</div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            ${(q.options || []).map((opt, j) => `
-              <div style="padding:8px 12px; border-radius:8px; font-size:0.9rem;
-                background:${j === q.correct ? '#e8f5e9' : 'var(--card)'};
-                border:1px solid ${j === q.correct ? 'var(--success)' : 'var(--border)'};
-                color:${j === q.correct ? 'var(--success)' : 'var(--text)'};">
-                ${j === q.correct ? '✅ ' : ''}${opt}
-              </div>`).join('')}
-          </div>
-          ${q.explanation ? `<div style="margin-top:8px; font-size:0.82rem; color:var(--text-muted);">💡 ${q.explanation}</div>` : ''}
+          <div style="font-weight:600; margin-bottom:10px;">${escapeHtml(q.question)}</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">...全${questions.length}問生成済み</div>
         </div>`).join('')}
     `;
     actions.style.display = 'block';
@@ -120,8 +100,251 @@ async function doGenerate(topic, level, btnId, previewId, actionsId) {
     showError(err.message);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `✨ ${I18n.t('generate')}`;
+    btn.innerHTML = orig;
   }
+}
+
+async function generateHomework() {
+  const topic = document.getElementById('hw-topic').value.trim();
+  const level = document.getElementById('hw-level').value;
+  if (!topic) { showHwError('テーマを入力してください'); return; }
+  await hwDoGenerate(topic, level, 'gen-btn', '');
+}
+
+async function generateFromPdf() {
+  const context = document.getElementById('pdf-context').value.trim();
+  const topic = document.getElementById('pdf-topic').value.trim() || 'PDFテキスト';
+  const level = document.getElementById('pdf-level').value;
+  if (!context) { showHwError('PDFを先にアップロードしてください'); return; }
+  await hwDoGenerate(topic, level, 'pdf-gen-btn', context);
+}
+
+async function hwDoGenerate(topic, level, btnId, context) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  const origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="loading-spinner"></span> 生成中...`;
+  showHwError('');
+  document.getElementById('hw-preview-section').style.display = 'none';
+  try {
+    const data = await API.generateHomework(topic, level, context);
+    currentHomework = data.homework;
+    currentTopic = topic;
+    currentLevel = level;
+    showHwPreview(data.homework);
+    populateStudentDropdown();
+  } catch (err) {
+    showHwError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origText;
+  }
+}
+
+function showHwError(msg) {
+  const el = document.getElementById('hw-error');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; return; }
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showHwPreview(hw) {
+  const questions = hw.questions || [];
+  const previewEl = document.getElementById('hw-preview');
+  const editorEl = document.getElementById('hw-editor');
+  const btn = document.getElementById('edit-toggle-btn');
+  editorEl.style.display = 'none';
+  previewEl.style.display = 'block';
+  if (btn) btn.textContent = '✏️ 編集する';
+  hwEditorMode = false;
+  previewEl.innerHTML = `
+    <div style="font-weight:700; font-size:1rem; margin-bottom:14px;">${escapeHtml(hw.title || '')}</div>
+    ${questions.map((q, i) => `
+      <div style="background:var(--bg); border-radius:10px; padding:14px; margin-bottom:10px;">
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">問題 ${i + 1}</div>
+        <div style="font-weight:600; margin-bottom:10px;">${escapeHtml(q.question)}</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${(q.options || []).map((opt, j) => `
+            <div style="padding:8px 12px; border-radius:8px; font-size:0.9rem;
+              background:${j === q.correct ? '#e8f5e9' : 'var(--card)'};
+              border:1px solid ${j === q.correct ? 'var(--success)' : 'var(--border)'};
+              color:${j === q.correct ? 'var(--success)' : 'var(--text)'};">
+              ${j === q.correct ? '✅ ' : ''}${escapeHtml(opt)}
+            </div>`).join('')}
+        </div>
+        ${q.explanation ? `<div style="margin-top:8px; font-size:0.82rem; color:var(--text-muted);">💡 ${escapeHtml(q.explanation)}</div>` : ''}
+      </div>`).join('')}
+  `;
+  document.getElementById('hw-preview-section').style.display = 'block';
+}
+
+function switchHwTab(tab) {
+  ['topic', 'pdf', 'manual'].forEach(t => {
+    const panel = document.getElementById(`hw-panel-${t}`);
+    const btn = document.getElementById(`tab-${t}`);
+    if (panel) panel.style.display = t === tab ? '' : 'none';
+    if (btn) {
+      btn.style.borderBottomColor = t === tab ? 'var(--primary)' : 'transparent';
+      btn.style.color = t === tab ? 'var(--primary)' : 'var(--text-muted)';
+      btn.style.fontWeight = t === tab ? '700' : '600';
+    }
+  });
+  if (tab === 'manual') initManualMode();
+  document.getElementById('hw-preview-section').style.display = 'none';
+  showHwError('');
+}
+
+function toggleHwEditor() {
+  if (hwEditorMode) {
+    currentHomework = collectHwEdits();
+    showHwPreview(currentHomework);
+  } else {
+    openHwEditor(currentHomework);
+  }
+}
+
+function openHwEditor(hw) {
+  if (!hw) return;
+  hwEditorMode = true;
+  const previewEl = document.getElementById('hw-preview');
+  const editorEl = document.getElementById('hw-editor');
+  const btn = document.getElementById('edit-toggle-btn');
+  previewEl.style.display = 'none';
+  if (btn) btn.textContent = '👁 プレビューに戻る';
+  editorEl.style.display = 'block';
+  const questions = hw.questions || [];
+  editorEl.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">タイトル</label>
+      <input type="text" id="edit-title" value="${escapeHtml(hw.title || '')}"
+        style="width:100%; padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-size:0.95rem; box-sizing:border-box; background:var(--bg); color:var(--text);">
+    </div>
+    <div id="edit-questions-container">
+      ${questions.map((q, i) => buildQuestionEditor(q, i)).join('')}
+    </div>
+    <button class="btn btn-ghost" onclick="addEditorQuestion()" style="width:100%; margin-top:8px;">＋ 問題を追加</button>
+  `;
+}
+
+function buildQuestionEditor(q, i) {
+  const opts = q.options || ['', '', '', ''];
+  const uid = Date.now() + i;
+  return `<div class="eq-card" style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">問題 ${i + 1}</span>
+      <button onclick="removeEditorQuestion(this)" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.82rem;">🗑 削除</button>
+    </div>
+    <textarea class="eq-question" rows="2" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; font-size:0.9rem; resize:vertical; box-sizing:border-box; margin-bottom:10px; background:var(--card); color:var(--text); font-family:inherit;">${escapeHtml(q.question)}</textarea>
+    ${['A','B','C','D'].map((l, j) => `
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <input type="radio" name="eq-correct-${uid}" class="eq-correct" value="${j}" ${q.correct === j ? 'checked' : ''} title="正解に設定">
+        <input type="text" class="eq-option" value="${escapeHtml(opts[j] || '')}" placeholder="選択肢${l}"
+          style="flex:1; padding:8px 10px; border:2px solid var(--border); border-radius:8px; font-size:0.88rem; background:var(--card); color:var(--text);">
+      </div>`).join('')}
+    <textarea class="eq-explanation" rows="2" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; font-size:0.85rem; resize:vertical; box-sizing:border-box; margin-top:6px; background:var(--card); color:var(--text); font-family:inherit;" placeholder="解説（ポルトガル語または英語、任意）">${escapeHtml(q.explanation || '')}</textarea>
+  </div>`;
+}
+
+function addEditorQuestion() {
+  const container = document.getElementById('edit-questions-container');
+  const i = container.querySelectorAll('.eq-card').length;
+  container.insertAdjacentHTML('beforeend', buildQuestionEditor({ question: '', options: ['', '', '', ''], correct: 0, explanation: '' }, i));
+}
+
+function removeEditorQuestion(btn) {
+  const card = btn.closest('.eq-card');
+  const container = card.parentElement;
+  if (container.querySelectorAll('.eq-card').length <= 1) return;
+  card.remove();
+  container.querySelectorAll('.eq-card').forEach((c, i) => {
+    c.querySelector('span').textContent = `問題 ${i + 1}`;
+  });
+}
+
+function collectHwEdits() {
+  const title = document.getElementById('edit-title')?.value.trim() || '';
+  const cards = document.querySelectorAll('#edit-questions-container .eq-card');
+  const questions = Array.from(cards).map((card, i) => {
+    const options = Array.from(card.querySelectorAll('.eq-option')).map(inp => inp.value.trim());
+    const correctEl = card.querySelector('.eq-correct:checked');
+    return {
+      id: i + 1,
+      type: 'multiple_choice',
+      question: card.querySelector('.eq-question').value.trim(),
+      options,
+      correct: correctEl ? parseInt(correctEl.value) : 0,
+      explanation: card.querySelector('.eq-explanation').value.trim()
+    };
+  });
+  return { title, questions };
+}
+
+function initManualMode() {
+  if (document.getElementById('manual-title').value) return;
+  document.getElementById('manual-title').value = '';
+  document.getElementById('manual-questions-container').innerHTML = '';
+  addManualQuestion();
+}
+
+function addManualQuestion() {
+  const container = document.getElementById('manual-questions-container');
+  const i = container.querySelectorAll('.eq-card').length;
+  container.insertAdjacentHTML('beforeend', buildQuestionEditor({ question: '', options: ['', '', '', ''], correct: 0, explanation: '' }, i));
+}
+
+function saveManualHomework() {
+  const title = document.getElementById('manual-title').value.trim() || '手動作成の宿題';
+  const cards = document.querySelectorAll('#manual-questions-container .eq-card');
+  const questions = Array.from(cards).map((card, i) => {
+    const options = Array.from(card.querySelectorAll('.eq-option')).map(inp => inp.value.trim());
+    const correctEl = card.querySelector('.eq-correct:checked');
+    return {
+      id: i + 1,
+      type: 'multiple_choice',
+      question: card.querySelector('.eq-question').value.trim(),
+      options,
+      correct: correctEl ? parseInt(correctEl.value) : 0,
+      explanation: card.querySelector('.eq-explanation').value.trim()
+    };
+  }).filter(q => q.question.trim());
+  if (questions.length === 0) { showHwError('少なくとも1問入力してください'); return; }
+  currentHomework = { title, questions };
+  currentTopic = title;
+  currentLevel = 'beginner';
+  showHwPreview(currentHomework);
+  populateStudentDropdown();
+}
+
+async function handlePdfFile(file) {
+  if (!file) return;
+  const zone = document.getElementById('pdf-drop-zone');
+  zone.innerHTML = `<div style="font-size:2rem;">⏳</div><div style="font-weight:600; margin-top:8px;">PDF解析中...</div>`;
+  try {
+    const formData = new FormData();
+    formData.append('pdf', file);
+    const res = await fetch(CONFIG.API_BASE_URL + '/api/parse-pdf', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + API.getToken() },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'PDF解析失敗');
+    document.getElementById('pdf-context').value = data.text;
+    document.getElementById('pdf-extracted-section').style.display = 'block';
+    zone.innerHTML = `<div style="font-size:2rem;">✅</div><div style="font-weight:700; margin-top:8px;">${escapeHtml(file.name)}</div><div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">${data.pages}ページ・${data.chars}文字抽出</div>`;
+  } catch (err) {
+    zone.innerHTML = `<div style="font-size:2rem; cursor:pointer;" onclick="document.getElementById('pdf-file-input').click()">📄</div><div style="font-weight:600; color:var(--danger); margin-top:8px;">${escapeHtml(err.message)}</div><div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">クリックして再試行</div>`;
+  }
+}
+
+function handlePdfDrop(e) {
+  e.preventDefault();
+  document.getElementById('pdf-drop-zone').style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file?.type === 'application/pdf') handlePdfFile(file);
+  else showHwError('PDFファイルのみ対応しています');
 }
 
 async function sendToAll() {
@@ -131,14 +354,12 @@ async function sendToAll() {
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span> 配布中...';
   try {
-    const topicEl = document.getElementById('hw-topic') || document.getElementById('quick-topic');
-    const levelEl = document.getElementById('hw-level');
     const data = await API.request('/api/homework/assign', {
       method: 'POST',
       body: JSON.stringify({
         homework: currentHomework,
-        topic: topicEl?.value || '日常会話',
-        level: levelEl?.value || 'beginner'
+        topic: currentTopic || '日常会話',
+        level: currentLevel || 'beginner'
       })
     });
     btn.innerHTML = `✅ ${data.assigned}人に配布しました！`;
@@ -513,15 +734,13 @@ async function sendToStudent() {
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner dark"></span>';
   try {
-    const topicEl = document.getElementById('hw-topic') || document.getElementById('quick-topic');
-    const levelEl = document.getElementById('hw-level');
     await API.request('/api/homework/assign-individual', {
       method: 'POST',
       body: JSON.stringify({
         studentId,
         homework: currentHomework,
-        topic: topicEl?.value || '日常会話',
-        level: levelEl?.value || 'beginner'
+        topic: currentTopic || '日常会話',
+        level: currentLevel || 'beginner'
       })
     });
     btn.innerHTML = '✅ 送信しました！';
