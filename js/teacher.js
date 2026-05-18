@@ -27,8 +27,8 @@ function showPage(name, linkEl) {
 
 function renderInviteLink() {
   if (!currentUser) return;
-  const base = window.location.origin;
-  const link = `${base}/register-student.html?t=${currentUser.id}`;
+  const base = window.location.href.replace(/[^/]*$/, '');
+  const link = `${base}register-student.html?t=${currentUser.id}`;
   const el = document.getElementById('invite-link');
   if (el) el.value = link;
 }

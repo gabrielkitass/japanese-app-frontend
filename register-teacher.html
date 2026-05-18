@@ -70,7 +70,7 @@
     <div class="error-msg" id="err"></div>
 
     <div class="login-link">
-      すでに登録済みの方は <a href="/login.html">ログイン</a>
+      すでに登録済みの方は <a href="login.html">ログイン</a>
     </div>
   </div>
 
@@ -80,7 +80,7 @@
   <script>
     if (Auth.isLoggedIn()) {
       const u = Auth.getUser();
-      window.location.href = u?.is_admin ? '/admin.html' : u?.role === 'teacher' ? '/teacher.html' : '/student.html';
+      window.location.href = u?.is_admin ? 'admin.html' : u?.role === 'teacher' ? 'teacher.html' : 'student.html';
     }
 
     async function doRegister() {
@@ -95,7 +95,7 @@
       btn.textContent = '登録中...';
       try {
         const data = await Auth.register(name, email, password);
-        window.location.href = '/teacher.html';
+        window.location.href = 'teacher.html';
       } catch (err) {
         errEl.textContent = err.message;
         errEl.style.display = 'block';
