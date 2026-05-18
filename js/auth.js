@@ -40,17 +40,17 @@ const Auth = (() => {
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
   }
 
   function requireAuth(role) {
     const user = getUser();
     if (!user || !getToken()) {
-      window.location.href = '/login.html';
+      window.location.href = 'login.html';
       return null;
     }
     if (role && user.role !== role) {
-      window.location.href = user.role === 'teacher' ? '/teacher.html' : '/student.html';
+      window.location.href = user.role === 'teacher' ? 'teacher.html' : 'student.html';
       return null;
     }
     API.setToken(getToken());
