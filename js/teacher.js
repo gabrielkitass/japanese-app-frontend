@@ -22,6 +22,27 @@ function showPage(name, linkEl) {
 
   if (name === 'students') loadStudents();
   if (name === 'billing') loadBilling();
+  if (name === 'add-student') renderInviteLink();
+}
+
+function renderInviteLink() {
+  if (!currentUser) return;
+  const base = window.location.href.replace(/[^/]*$/, '');
+  const link = `${base}register-student.html?t=${currentUser.id}`;
+  const el = document.getElementById('invite-link');
+  if (el) el.value = link;
+}
+
+function copyInviteLink() {
+  const el = document.getElementById('invite-link');
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => {
+    const msg = document.getElementById('copy-msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2500); }
+  }).catch(() => {
+    el.select();
+    document.execCommand('copy');
+  });
 }
 
 function switchLang(lang, btnEl) {
@@ -270,7 +291,7 @@ async function loadBilling() {
       <div style="margin-bottom:24px;">
         <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">トライアル終了後の月額</div>
         <div style="font-size:1.5rem; font-weight:700; color:var(--primary)">¥${data.monthly_cost.toLocaleString()}</div>
-        <div style="font-size:0.8rem; color:var(--text-muted)">（¥1,000 × ${data.student_count}人）</div>
+        <div style="font-size:0.8rem; color:var(--text-muted)">（¥500 × ${data.student_count}人）</div>
       </div>
       ${isTrialActive
         ? `<button class="btn btn-primary" onclick="startBilling()" style="width:100%">💳 今すぐ支払い方法を登録</button>
@@ -287,13 +308,14 @@ async function loadBilling() {
       </button>
     `;
   } catch (err) {
-    area.innerHTML = `<span style="color:var(--danger)">${err.message}</span>`;
+    area.innerHTML = `<span style="color:var(--danger)">${escapeHtml(err.message)}</span>`;
   }
 }
 
 async function startBilling() {
   try {
     const data = await API.request('/api/billing/create-checkout', { method: 'POST', body: JSON.stringify({}) });
+    if (!data?.url) throw new Error('チェックアウトURLが取得できませんでした');
     window.location.href = data.url;
   } catch (err) {
     showError(err.message);

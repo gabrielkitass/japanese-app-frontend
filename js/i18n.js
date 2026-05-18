@@ -3,7 +3,7 @@ const I18n = (() => {
   let translations = {};
 
   async function load(lang) {
-    const response = await fetch(`/locales/${lang}.json`);
+    const response = await fetch(`./locales/${lang}.json`);
     translations = await response.json();
     currentLang = lang;
     localStorage.setItem('preferred_lang', lang);

@@ -12,7 +12,7 @@ const API = (() => {
     if (response.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
-      window.location.href = '/login.html';
+      window.location.href = 'login.html';
       return;
     }
     if (response.status === 429) throw new Error(I18n.t('rate_limit_error'));
