@@ -203,8 +203,10 @@ async function handleAudioFile(file) {
   zone.innerHTML = `<div style="font-size:2rem;">⏳</div><div style="font-weight:600; margin-top:8px;">音声認識中... （授業時間によって1〜2分かかる場合があります）</div>`;
   statusEl.style.display = 'none';
   try {
+    const lang = document.getElementById('audio-lang')?.value || '';
     const formData = new FormData();
     formData.append('audio', file);
+    if (lang) formData.append('lang', lang);
     const res = await fetch(CONFIG.API_BASE_URL + '/api/transcribe-audio', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + API.getToken() },
