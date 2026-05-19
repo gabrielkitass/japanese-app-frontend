@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>先生用マニュアル — にほんごアプリ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; background: #F5F7FA; color: #1a1a2e; line-height: 1.7; }
+
+    .header {
+      background: linear-gradient(135deg, #4A90D9, #357ABD);
+      color: #fff;
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    .header .logo { font-size: 3rem; margin-bottom: 8px; }
+    .header h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .header p { font-size: 0.95rem; opacity: 0.85; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .toc {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+    .toc h2 { font-size: 0.85rem; font-weight: 700; color: #718096; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: #4A90D9; text-decoration: none; font-size: 0.95rem; font-weight: 600; }
+    .toc a:hover { text-decoration: underline; }
+
+    .section {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 28px 28px;
+      margin-bottom: 20px;
+    }
+    .section-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      background: #4A90D9; color: #fff;
+      border-radius: 50%; font-size: 0.9rem; font-weight: 800;
+      margin-right: 10px; flex-shrink: 0;
+    }
+    .section h2 {
+      display: flex; align-items: center;
+      font-size: 1.1rem; font-weight: 800; margin-bottom: 18px;
+      padding-bottom: 12px; border-bottom: 2px solid #f0f4f8;
+      color: #1a1a2e;
+    }
+    .section h2 .emoji { font-size: 1.3rem; margin-right: 8px; }
+
+    .step {
+      display: flex; gap: 14px; margin-bottom: 16px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: #EBF4FF; color: #4A90D9;
+      border-radius: 50%; font-size: 0.8rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-body strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+    .step-body p, .step-body ul { font-size: 0.9rem; color: #4a5568; }
+    .step-body ul { padding-left: 16px; margin-top: 4px; }
+    .step-body li { margin-bottom: 2px; }
+
+    .ui-label {
+      display: inline-block;
+      background: #EBF4FF; color: #4A90D9;
+      border: 1px solid #BEE3F8;
+      border-radius: 6px; padding: 2px 8px;
+      font-size: 0.82rem; font-weight: 700;
+      white-space: nowrap;
+    }
+    .ui-label.green { background: #F0FFF4; color: #276749; border-color: #9AE6B4; }
+    .ui-label.gray { background: #F7FAFC; color: #4a5568; border-color: #CBD5E0; }
+
+    .tip {
+      background: #FFFBEB; border-left: 4px solid #F6AD55;
+      border-radius: 0 8px 8px 0; padding: 12px 16px;
+      font-size: 0.88rem; margin-top: 14px; color: #744210;
+    }
+    .tip strong { font-weight: 700; }
+
+    .info-box {
+      background: #EBF8FF; border-left: 4px solid #4A90D9;
+      border-radius: 0 8px 8px 0; padding: 12px 16px;
+      font-size: 0.88rem; margin-top: 14px; color: #2c5282;
+    }
+
+    .method-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-top: 14px;
+    }
+    @media (max-width: 500px) { .method-grid { grid-template-columns: 1fr; } }
+    .method-card {
+      background: #F7FAFC; border: 1px solid #e2e8f0;
+      border-radius: 10px; padding: 16px;
+    }
+    .method-card .icon { font-size: 1.6rem; margin-bottom: 6px; }
+    .method-card h3 { font-size: 0.9rem; font-weight: 800; margin-bottom: 6px; }
+    .method-card p { font-size: 0.82rem; color: #4a5568; }
+
+    .url-box {
+      background: #1a1a2e; color: #68d391;
+      border-radius: 8px; padding: 12px 16px;
+      font-family: monospace; font-size: 0.82rem;
+      word-break: break-all; margin-top: 10px;
+    }
+
+    .faq-item { margin-bottom: 16px; }
+    .faq-q { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; color: #2d3748; }
+    .faq-q::before { content: 'Q. '; color: #4A90D9; }
+    .faq-a { font-size: 0.88rem; color: #4a5568; padding-left: 20px; }
+    .faq-a::before { content: 'A. '; font-weight: 700; color: #38a169; }
+
+    .footer {
+      text-align: center; font-size: 0.82rem; color: #718096;
+      margin-top: 40px; padding-top: 24px; border-top: 1px solid #e2e8f0;
+    }
+    .print-btn {
+      display: block; width: fit-content;
+      margin: 0 auto 24px;
+      padding: 10px 24px;
+      background: #4A90D9; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+    }
+    @media print {
+      .print-btn { display: none; }
+      body { background: #fff; }
+      .section { border: 1px solid #ccc; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🎌</div>
+  <h1>にほんごアプリ　先生用マニュアル</h1>
+  <p>授業の宿題作りと生徒管理がかんたんになるアプリです</p>
+</div>
+
+<div class="container">
+
+  <button class="print-btn" onclick="window.print()">🖨️ PDFで保存・印刷</button>
+
+  <!-- 目次 -->
+  <div class="toc">
+    <h2>目次</h2>
+    <ol>
+      <li><a href="#s1">アカウント登録とログイン</a></li>
+      <li><a href="#s2">ダッシュボードの見かた</a></li>
+      <li><a href="#s3">生徒の追加方法</a></li>
+      <li><a href="#s4">宿題の作りかた（4つの方法）</a></li>
+      <li><a href="#s5">生徒の進捗を確認する</a></li>
+      <li><a href="#s6">よくある質問</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. アカウント登録 -->
+  <div class="section" id="s1">
+    <h2><span class="section-num">1</span><span class="emoji">👤</span>アカウント登録とログイン</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>登録ページを開く</strong>
+        <p>下のURLをブラウザで開いてください。</p>
+        <div class="url-box">https://gabrielkitass.github.io/japanese-app-frontend/register-teacher.html</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>情報を入力して登録</strong>
+        <ul>
+          <li>お名前・メールアドレス・パスワード（6文字以上）を入力</li>
+          <li><span class="ui-label">📝 先生として登録</span> ボタンをクリック</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>次回以降はログインページから</strong>
+        <div class="url-box">https://gabrielkitass.github.io/japanese-app-frontend/login.html</div>
+      </div>
+    </div>
+
+    <div class="tip"><strong>💡 スマホでも使えます。</strong>ただし、宿題作成や生徒管理はパソコンの方が見やすくておすすめです。</div>
+  </div>
+
+  <!-- 2. ダッシュボード -->
+  <div class="section" id="s2">
+    <h2><span class="section-num">2</span><span class="emoji">📊</span>ダッシュボードの見かた</h2>
+
+    <div class="step">
+      <div class="step-num">–</div>
+      <div class="step-body">
+        <strong>左のメニュー（サイドバー）</strong>
+        <ul>
+          <li><span class="ui-label">📊 ダッシュボード</span> — 生徒数・今週の宿題数・本日の学習者を確認</li>
+          <li><span class="ui-label">📝 宿題作成</span> — 宿題を作ってクラス全員または個別に配布</li>
+          <li><span class="ui-label">👥 生徒一覧</span> — 全生徒の宿題提出状況・最終アクセス日を確認</li>
+          <li><span class="ui-label">➕ 生徒追加</span> — 招待リンクをコピーして生徒に送る</li>
+          <li><span class="ui-label">📊 週次レポート</span> — AIが生徒の弱点を分析してレポート生成</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">–</div>
+      <div class="step-body">
+        <strong>クイック宿題作成（ダッシュボード内）</strong>
+        <p>テーマを入力して <span class="ui-label">✨ AI生成</span> を押すと、すぐに宿題が作れます。「全員に配布」または特定の生徒だけに送ることができます。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 生徒の追加 -->
+  <div class="section" id="s3">
+    <h2><span class="section-num">3</span><span class="emoji">➕</span>生徒の追加方法</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>左メニューの <span class="ui-label">➕ 生徒追加</span> をクリック</strong>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>招待リンクをコピー</strong>
+        <p><span class="ui-label gray">🔗 リンクをコピー</span> ボタンを押して、LINEやWhatsAppで生徒に送る。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>生徒が登録する</strong>
+        <p>生徒がリンクを開くと登録画面が表示されます。名前・メール・パスワードを入力するだけで完了です。</p>
+      </div>
+    </div>
+
+    <div class="info-box">📌 招待リンク経由で登録した生徒は、自動的に先生のクラスに紐づきます。<br>リンクは何人でも使えます（同じリンクをクラス全員に送ってOKです）。</div>
+  </div>
+
+  <!-- 4. 宿題作成 -->
+  <div class="section" id="s4">
+    <h2><span class="section-num">4</span><span class="emoji">📝</span>宿題の作りかた（4つの方法）</h2>
+
+    <p style="font-size:0.9rem; color:#4a5568; margin-bottom:16px;">左メニューの <span class="ui-label">📝 宿題作成</span> を開くと、4つのタブがあります。</p>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <div class="icon">📝</div>
+        <h3>テーマ入力</h3>
+        <p>「病院での会話」「電車の乗り方」などテーマを入力するだけでAIが10問作成。一番かんたん。</p>
+      </div>
+      <div class="method-card">
+        <div class="icon">🎬</div>
+        <h3>動画（授業音声）</h3>
+        <p>授業の音声ファイル（MP3・M4A）をアップロードするとWhisperが文字起こしし、授業内容に沿った問題を生成。</p>
+      </div>
+      <div class="method-card">
+        <div class="icon">📄</div>
+        <h3>PDF</h3>
+        <p>教材のPDFをアップロードするとテキストを抽出し、その内容に沿った問題を生成。</p>
+      </div>
+      <div class="method-card">
+        <div class="icon">✏️</div>
+        <h3>手動作成</h3>
+        <p>AIを使わず、先生自身が問題文・選択肢・正解・解説を直接入力して作成。</p>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div class="step">
+        <div class="step-num">①</div>
+        <div class="step-body">
+          <strong>宿題が生成されたら「プレビュー」で確認</strong>
+          <p>問題の内容を確認できます。修正したい場合は <span class="ui-label">✏️ 編集する</span> ボタンで問題文・選択肢・解説をそれぞれ修正できます。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">②</div>
+        <div class="step-body">
+          <strong>配布する</strong>
+          <ul>
+            <li><span class="ui-label green">📤 全員に配布</span> — クラス全員に一括送信</li>
+            <li>または生徒を選んで <span class="ui-label">📤 個別送信</span> — 特定の生徒だけに送信</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>🎬 動画タブの使いかた（音声ファイルの作りかた）</strong><br>
+      動画から音声を取り出す方法：<br>
+      • <strong>スマホ（iPhone）</strong>：「ショートカット」アプリ → 「メディアから変換」<br>
+      • <strong>パソコン</strong>：<code>cloudconvert.com</code> でMP4→MP3に変換（無料）<br>
+      授業言語は <strong>🇧🇷 Português</strong> を選んでください（デフォルト）。
+    </div>
+  </div>
+
+  <!-- 5. 進捗確認 -->
+  <div class="section" id="s5">
+    <h2><span class="section-num">5</span><span class="emoji">👥</span>生徒の進捗を確認する</h2>
+
+    <div class="step">
+      <div class="step-num">–</div>
+      <div class="step-body">
+        <strong>左メニューの <span class="ui-label">👥 生徒一覧</span> を開く</strong>
+        <ul>
+          <li><strong>宿題提出</strong>：「2/5 提出」のように、出した宿題に対して何問提出されたか表示</li>
+          <li><strong>進捗バー</strong>：提出率をグラフで表示</li>
+          <li><strong>最終アクセス</strong>：最後にアプリを使った日付</li>
+          <li><span class="ui-label">📊 カード進捗</span> ボタン：フラッシュカードの正答率を確認</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">–</div>
+      <div class="step-body">
+        <strong>週次レポートで弱点を把握</strong>
+        <p>左メニューの <span class="ui-label">📊 週次レポート</span> を開くと、AIが各生徒の弱点カテゴリをまとめてレポートしてくれます。次の授業の参考に使えます。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. FAQ -->
+  <div class="section" id="s6">
+    <h2><span class="section-num">6</span><span class="emoji">❓</span>よくある質問</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">生徒が招待リンクを開いたら「404エラー」と表示される</div>
+      <div class="faq-a">先生のダッシュボードを<strong>一度リロード</strong>してから招待リンクをコピーし直してください。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">AIが生成した問題のテーマがズレている</div>
+      <div class="faq-a">テーマをより具体的に入力するとよくなります。例：「買い物」より「スーパーでの値段の聞きかた」。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">動画ファイルが25MBを超えていてアップロードできない</div>
+      <div class="faq-a"><code>cloudconvert.com</code> でMP3に変換するとサイズが大幅に小さくなります。または授業内容のキーワードや要点を下のテキストエリアに直接貼り付けても宿題が作れます。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">生徒の進捗が表示されない（0/0 提出）</div>
+      <div class="faq-a">生徒がまだ宿題を提出していないか、宿題がまだ配布されていない状態です。宿題を配布してから確認してください。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">ログインしてもすぐにログアウトされる</div>
+      <div class="faq-a">ブラウザのプライベートモードはオフにして使ってください。Safari/Chromeの通常モードを推奨します。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">生徒の画面はどんなもの？</div>
+      <div class="faq-a">生徒はスマホで宿題を受け取り、4択問題に答えます。終わると自動で先生に提出されます。AIチャットや単語フラッシュカードも使えます。</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>ご不明な点はガブリエル先生までお問い合わせください。</p>
+    <p style="margin-top:6px;">にほんごアプリ — 宿題作りの手間をゼロに。</p>
+  </div>
+
+</div>
+</body>
+</html>
