@@ -181,7 +181,7 @@ function showHwPreview(hw) {
 }
 
 function switchHwTab(tab) {
-  ['topic', 'pdf', 'manual'].forEach(t => {
+  ['topic', 'video', 'pdf', 'manual'].forEach(t => {
     const panel = document.getElementById(`hw-panel-${t}`);
     const btn = document.getElementById(`tab-${t}`);
     if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -194,6 +194,46 @@ function switchHwTab(tab) {
   if (tab === 'manual') initManualMode();
   document.getElementById('hw-preview-section').style.display = 'none';
   showHwError('');
+}
+
+async function fetchVideoTranscript() {
+  const url = document.getElementById('video-url').value.trim();
+  if (!url) { showHwError('YouTube URLを入力してください'); return; }
+  const btn = document.getElementById('video-fetch-btn');
+  const status = document.getElementById('video-fetch-status');
+  btn.disabled = true;
+  btn.textContent = '取得中...';
+  status.style.color = 'var(--text-muted)';
+  status.textContent = '⏳ 字幕を取得しています...';
+  try {
+    const res = await fetch(CONFIG.API_BASE_URL + '/api/video-transcript', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API.getToken() },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    document.getElementById('video-context').value = data.text;
+    status.style.color = 'var(--success)';
+    status.textContent = `✅ ${data.segments}セグメント・${data.chars}文字の字幕を取得しました`;
+    if (!document.getElementById('video-topic').value) {
+      document.getElementById('video-topic').value = '授業の復習';
+    }
+  } catch (err) {
+    status.style.color = 'var(--danger)';
+    status.textContent = `⚠️ ${err.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 字幕取得';
+  }
+}
+
+async function generateFromVideo() {
+  const context = document.getElementById('video-context').value.trim();
+  const topic = document.getElementById('video-topic').value.trim() || '授業の復習';
+  const level = document.getElementById('video-level').value;
+  if (!context) { showHwError('授業内容を入力するか、YouTube字幕を取得してください'); return; }
+  await hwDoGenerate(topic, level, 'video-gen-btn', context);
 }
 
 function toggleHwEditor() {

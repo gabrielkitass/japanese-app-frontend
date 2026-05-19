@@ -104,10 +104,11 @@
       </div>
       <div class="card">
         <!-- タブ -->
-        <div style="display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid var(--border);">
-          <button id="tab-topic" onclick="switchHwTab('topic')" style="padding:10px 20px; background:none; border:none; border-bottom:3px solid var(--primary); color:var(--primary); font-weight:700; cursor:pointer; margin-bottom:-2px; font-size:0.9rem;">📝 テーマ</button>
-          <button id="tab-pdf" onclick="switchHwTab('pdf')" style="padding:10px 20px; background:none; border:none; border-bottom:3px solid transparent; color:var(--text-muted); font-weight:600; cursor:pointer; margin-bottom:-2px; font-size:0.9rem;">📄 PDF</button>
-          <button id="tab-manual" onclick="switchHwTab('manual')" style="padding:10px 20px; background:none; border:none; border-bottom:3px solid transparent; color:var(--text-muted); font-weight:600; cursor:pointer; margin-bottom:-2px; font-size:0.9rem;">✏️ 手動作成</button>
+        <div style="display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid var(--border); flex-wrap:wrap;">
+          <button id="tab-topic" onclick="switchHwTab('topic')" style="padding:10px 16px; background:none; border:none; border-bottom:3px solid var(--primary); color:var(--primary); font-weight:700; cursor:pointer; margin-bottom:-2px; font-size:0.88rem;">📝 テーマ</button>
+          <button id="tab-video" onclick="switchHwTab('video')" style="padding:10px 16px; background:none; border:none; border-bottom:3px solid transparent; color:var(--text-muted); font-weight:600; cursor:pointer; margin-bottom:-2px; font-size:0.88rem;">🎬 動画</button>
+          <button id="tab-pdf" onclick="switchHwTab('pdf')" style="padding:10px 16px; background:none; border:none; border-bottom:3px solid transparent; color:var(--text-muted); font-weight:600; cursor:pointer; margin-bottom:-2px; font-size:0.88rem;">📄 PDF</button>
+          <button id="tab-manual" onclick="switchHwTab('manual')" style="padding:10px 16px; background:none; border:none; border-bottom:3px solid transparent; color:var(--text-muted); font-weight:600; cursor:pointer; margin-bottom:-2px; font-size:0.88rem;">✏️ 手動作成</button>
         </div>
 
         <!-- テーマ入力 -->
@@ -126,6 +127,43 @@
               </select>
             </div>
             <button class="btn btn-primary" onclick="generateHomework()" id="gen-btn">✨ <span data-i18n="generate">AI生成</span></button>
+          </div>
+        </div>
+
+        <!-- 動画 -->
+        <div id="hw-panel-video" style="display:none;">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>YouTube URL</label>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <input type="text" id="video-url" placeholder="https://youtu.be/xxxxx または https://youtube.com/watch?v=xxxxx"
+                style="flex:1; padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-size:0.9rem; outline:none; background:var(--bg); color:var(--text);">
+              <button class="btn btn-primary" onclick="fetchVideoTranscript()" id="video-fetch-btn" style="white-space:nowrap;">🔍 字幕取得</button>
+            </div>
+            <div id="video-fetch-status" style="font-size:0.82rem; margin-top:6px; color:var(--text-muted);"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin:14px 0; color:var(--text-muted); font-size:0.82rem;">
+            <div style="flex:1; height:1px; background:var(--border);"></div>
+            <span>または授業内容を直接貼り付け</span>
+            <div style="flex:1; height:1px; background:var(--border);"></div>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">授業内容・台本（編集可）</label>
+            <textarea id="video-context" rows="6" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; font-size:0.85rem; resize:vertical; box-sizing:border-box; margin-top:6px; font-family:inherit; background:var(--bg); color:var(--text);" placeholder="字幕が取得できない場合は、授業の内容・台本・キーワードをここに貼り付けてください"></textarea>
+          </div>
+          <div class="form-row" style="margin-top:10px;">
+            <div class="form-group" style="flex:2;">
+              <label>テーマ（タイトル用）</label>
+              <input type="text" id="video-topic" placeholder="例：5月19日の授業・第4課まとめ">
+            </div>
+            <div class="form-group">
+              <label data-i18n="level">レベル</label>
+              <select id="video-level">
+                <option value="beginner">初級 N5</option>
+                <option value="elementary">初中級 N4</option>
+                <option value="intermediate">中級 N3</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="generateFromVideo()" id="video-gen-btn">✨ AI生成</button>
           </div>
         </div>
 
@@ -316,7 +354,7 @@
 <script src="js/i18n.js?v=2"></script>
 <script src="js/api.js?v=3"></script>
 <script src="js/auth.js?v=2"></script>
-<script src="js/teacher.js?v=4"></script>
+<script src="js/teacher.js?v=5"></script>
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 </script>
