@@ -196,43 +196,46 @@ function switchHwTab(tab) {
   showHwError('');
 }
 
-async function fetchVideoTranscript() {
-  const url = document.getElementById('video-url').value.trim();
-  if (!url) { showHwError('YouTube URLを入力してください'); return; }
-  const btn = document.getElementById('video-fetch-btn');
-  const status = document.getElementById('video-fetch-status');
-  btn.disabled = true;
-  btn.textContent = '取得中...';
-  status.style.color = 'var(--text-muted)';
-  status.textContent = '⏳ 字幕を取得しています...';
+async function handleAudioFile(file) {
+  if (!file) return;
+  const zone = document.getElementById('audio-drop-zone');
+  const statusEl = document.getElementById('audio-status');
+  zone.innerHTML = `<div style="font-size:2rem;">⏳</div><div style="font-weight:600; margin-top:8px;">音声認識中... （授業時間によって1〜2分かかる場合があります）</div>`;
+  statusEl.style.display = 'none';
   try {
-    const res = await fetch(CONFIG.API_BASE_URL + '/api/video-transcript', {
+    const formData = new FormData();
+    formData.append('audio', file);
+    const res = await fetch(CONFIG.API_BASE_URL + '/api/transcribe-audio', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API.getToken() },
-      body: JSON.stringify({ url })
+      headers: { 'Authorization': 'Bearer ' + API.getToken() },
+      body: formData
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     document.getElementById('video-context').value = data.text;
-    status.style.color = 'var(--success)';
-    status.textContent = `✅ ${data.segments}セグメント・${data.chars}文字の字幕を取得しました`;
     if (!document.getElementById('video-topic').value) {
       document.getElementById('video-topic').value = '授業の復習';
     }
+    zone.innerHTML = `<div style="font-size:2rem;">✅</div><div style="font-weight:700; margin-top:8px;">${escapeHtml(file.name)}</div><div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">${data.chars}文字の文字起こし完了</div>`;
+    statusEl.style.display = 'none';
   } catch (err) {
-    status.style.color = 'var(--danger)';
-    status.textContent = `⚠️ ${err.message}`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🔍 字幕取得';
+    zone.innerHTML = `<div style="font-size:2rem; cursor:pointer;" onclick="document.getElementById('audio-file-input').click()">🎤</div><div style="font-weight:600; color:var(--danger); margin-top:8px;">${escapeHtml(err.message)}</div><div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">クリックして再試行</div>`;
   }
+}
+
+function handleAudioDrop(e) {
+  e.preventDefault();
+  document.getElementById('audio-drop-zone').style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file) handleAudioFile(file);
+  else showHwError('ファイルの読み込みに失敗しました');
 }
 
 async function generateFromVideo() {
   const context = document.getElementById('video-context').value.trim();
   const topic = document.getElementById('video-topic').value.trim() || '授業の復習';
   const level = document.getElementById('video-level').value;
-  if (!context) { showHwError('授業内容を入力するか、YouTube字幕を取得してください'); return; }
+  if (!context) { showHwError('音声ファイルをアップロードするか、授業内容を入力してください'); return; }
   await hwDoGenerate(topic, level, 'video-gen-btn', context);
 }
 
